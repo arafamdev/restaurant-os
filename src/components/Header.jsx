@@ -1,6 +1,13 @@
 import { useLocation } from "react-router-dom";
 
-import { HiOutlineBell, HiOutlineMoon, HiOutlineBars3 } from "react-icons/hi2";
+import {
+  HiOutlineBell,
+  HiOutlineMoon,
+  HiOutlineBars3,
+  HiOutlineArrowRightOnRectangle,
+} from "react-icons/hi2";
+
+import useAuth from "../hooks/useAuth";
 
 const pageTitles = {
   "/dashboard": "Dashboard",
@@ -14,7 +21,13 @@ const pageTitles = {
 function Header({ onMenuClick }) {
   const location = useLocation();
 
+  const { logout } = useAuth();
+
   const pageTitle = pageTitles[location.pathname];
+
+  async function handleLogout() {
+    await logout();
+  }
 
   return (
     <header className="flex h-20 items-center justify-between border-b bg-white px-4 md:px-8">
@@ -33,7 +46,6 @@ function Header({ onMenuClick }) {
         {/* Page title */}
         <div>
           <p className="text-sm text-gray-500">RestaurantOS</p>
-
           <h1 className="text-xl font-semibold text-gray-900">{pageTitle}</h1>
         </div>
       </div>
@@ -63,6 +75,16 @@ function Header({ onMenuClick }) {
           <p className="text-sm font-medium text-gray-900">Arafam</p>
           <p className="text-xs text-gray-500">Admin</p>
         </div>
+
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Logout"
+          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+        >
+          <HiOutlineArrowRightOnRectangle className="h-5 w-5" />
+        </button>
       </div>
     </header>
   );
