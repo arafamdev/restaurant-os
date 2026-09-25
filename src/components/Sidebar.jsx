@@ -67,7 +67,7 @@ function Sidebar({ isSidebarOpen, onClose }) {
         type="button"
         onClick={onClose}
         aria-label="Close navigation menu"
-        className="absolute right-4 top-4 rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 md:hidden"
+        className="absolute top-4 right-4 rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 md:hidden"
       >
         <HiOutlineXMark className="h-6 w-6" />
       </button>
@@ -91,7 +91,7 @@ function Sidebar({ isSidebarOpen, onClose }) {
       <nav className="space-y-6">
         {navItems.map((section) => (
           <div key={section.section}>
-            <p className="mb-3 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400 md:hidden lg:block">
+            <p className="mb-3 px-4 text-xs font-semibold tracking-wider text-gray-400 uppercase md:hidden lg:block">
               {section.section}
             </p>
 

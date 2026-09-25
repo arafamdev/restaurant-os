@@ -58,7 +58,7 @@ function Login() {
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm transition outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
             />
           </div>
 
@@ -77,7 +77,7 @@ function Login() {
               onChange={(event) => setPassword(event.target.value)}
               placeholder="••••••••"
               required
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm transition outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10"
             />
           </div>
 
