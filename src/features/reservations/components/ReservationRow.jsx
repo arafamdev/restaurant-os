@@ -1,6 +1,10 @@
 import { HiOutlineCalendarDays, HiOutlineUsers } from "react-icons/hi2";
 
-import { RESERVATION_STATUS_STYLES } from "../../../constants";
+import {
+  RESERVATION_STATUS_LABELS,
+  RESERVATION_STATUS_STYLES,
+} from "../../../constants";
+
 import { formatReservationDate } from "../../../utils/dateUtils";
 
 function ReservationRow({ reservation }) {
@@ -16,32 +20,120 @@ function ReservationRow({ reservation }) {
     .join("")
     .toUpperCase();
 
+  const statusBadge = (
+    <span
+      className={`rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${
+        RESERVATION_STATUS_STYLES[status]
+      }`}
+    >
+      {RESERVATION_STATUS_LABELS[status]}
+    </span>
+  );
+
+  const avatar = (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-700">
+      {initials}
+    </div>
+  );
+
   return (
-    <div className="grid grid-cols-[1fr_auto] items-center gap-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="min-w-0">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold text-gray-700">
-            {initials}
-          </div>
+    <>
+      {/* Desktop */}
+      <div className="hidden items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 xl:grid xl:grid-cols-[minmax(180px,1.4fr)_110px_minmax(180px,1.3fr)_80px_120px]">
+        <div className="flex min-w-0 items-center gap-3">
+          {avatar}
 
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-gray-900">
               {customers.full_name}
             </p>
 
-            <p className="text-sm text-gray-500">Table {tables.table_number}</p>
+            {notes && (
+              <p className="mt-0.5 truncate text-xs text-gray-400">{notes}</p>
+            )}
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <HiOutlineCalendarDays className="h-4 w-4" />
+        <div className="text-sm text-gray-700">
+          <p>Table {tables.table_number}</p>
+
+          {tables.location && (
+            <p className="mt-0.5 truncate text-xs text-gray-400">
+              {tables.location}
+            </p>
+          )}
+        </div>
+
+        <div className="flex min-w-0 items-center gap-2 text-sm text-gray-600">
+          <HiOutlineCalendarDays className="h-4 w-4 shrink-0 text-gray-400" />
+
+          <span className="truncate">{reservationDate}</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <HiOutlineUsers className="h-4 w-4 shrink-0 text-gray-400" />
+
+          <span>{guests}</span>
+        </div>
+
+        <div className="flex justify-center">{statusBadge}</div>
+      </div>
+
+      {/* Tablet */}
+      <div className="hidden items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 md:grid md:grid-cols-[minmax(160px,1.5fr)_minmax(170px,1.3fr)_110px] xl:hidden">
+        <div className="flex min-w-0 items-center gap-3">
+          {avatar}
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-gray-900">
+              {customers.full_name}
+            </p>
+
+            <p className="truncate text-xs text-gray-500">
+              Table {tables.table_number}
+              {tables.location && ` · ${tables.location}`}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex min-w-0 items-center gap-2 text-sm text-gray-600">
+          <HiOutlineCalendarDays className="h-4 w-4 shrink-0 text-gray-400" />
+
+          <span className="truncate">{reservationDate}</span>
+        </div>
+
+        <div className="flex justify-center">{statusBadge}</div>
+      </div>
+
+      {/* Mobile */}
+      <div className="space-y-3 px-4 py-4 md:hidden">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {avatar}
+
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-gray-900">
+                {customers.full_name}
+              </p>
+
+              <p className="text-xs text-gray-500">
+                Table {tables.table_number}
+              </p>
+            </div>
+          </div>
+
+          {statusBadge}
+        </div>
+
+        <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500">
+          <div className="flex items-center gap-1.5">
+            <HiOutlineCalendarDays className="h-4 w-4 text-gray-400" />
 
             <span>{reservationDate}</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <HiOutlineUsers className="h-4 w-4" />
+          <div className="flex items-center gap-1.5">
+            <HiOutlineUsers className="h-4 w-4 text-gray-400" />
 
             <span>
               {guests} {guests === 1 ? "guest" : "guests"}
@@ -50,37 +142,12 @@ function ReservationRow({ reservation }) {
         </div>
 
         {notes && (
-          <p className="mt-3 text-sm text-gray-500">
-            <span className="font-medium text-gray-700">Note:</span> {notes}
+          <p className="truncate text-xs text-gray-400">
+            <span className="font-medium text-gray-600">Note:</span> {notes}
           </p>
         )}
       </div>
-
-      {/* Status */}
-      {/* <span
-        className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-          status === RESERVATION_STATUS.CONFIRMED
-            ? "bg-green-100 text-green-700"
-            : status === RESERVATION_STATUS.PENDING
-              ? "bg-yellow-100 text-yellow-700"
-              : status === RESERVATION_STATUS.SEATED
-                ? "bg-blue-100 text-blue-700"
-                : status === RESERVATION_STATUS.COMPLETED
-                  ? "bg-gray-100 text-gray-700"
-                  : "bg-red-100 text-red-700"
-        }`}
-      >
-        {status}
-      </span> */}
-
-      <span
-        className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-          RESERVATION_STATUS_STYLES[status]
-        }`}
-      >
-        {status}
-      </span>
-    </div>
+    </>
   );
 }
 
