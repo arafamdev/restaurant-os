@@ -14,6 +14,8 @@ import Login from "./pages/Login";
 import CreateTable from "./pages/CreateTable";
 import TableDetails from "./pages/TableDetails";
 import EditTable from "./pages/EditTable";
+import NewReservation from "./pages/NewReservation";
+import ReservationDetails from "./pages/ReservationDetails";
 
 function App() {
   return (
@@ -27,7 +29,13 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+
             <Route path="/reservations" element={<Reservations />} />
+            <Route path="/reservations/new" element={<NewReservation />} />
+            <Route
+              path="/reservations/:reservationId"
+              element={<ReservationDetails />}
+            />
 
             <Route path="/tables" element={<Tables />} />
             <Route path="/tables/new" element={<CreateTable />} />

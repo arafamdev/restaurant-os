@@ -6,8 +6,10 @@ import {
 } from "../../../constants";
 
 import { formatReservationDate } from "../../../utils/dateUtils";
+import { useNavigate } from "react-router-dom";
 
 function ReservationRow({ reservation }) {
+  const navigate = useNavigate();
   const { customers, tables, guests, status, starts_at, ends_at, notes } =
     reservation;
 
@@ -19,6 +21,10 @@ function ReservationRow({ reservation }) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+
+  function handleClick() {
+    navigate(`/reservations/${reservation.id}`);
+  }
 
   const statusBadge = (
     <span
@@ -39,7 +45,10 @@ function ReservationRow({ reservation }) {
   return (
     <>
       {/* Desktop */}
-      <div className="hidden items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 xl:grid xl:grid-cols-[minmax(180px,1.4fr)_110px_minmax(180px,1.3fr)_80px_120px]">
+      <div
+        onClick={handleClick}
+        className="hidden cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 xl:grid xl:grid-cols-[minmax(180px,1.4fr)_110px_minmax(180px,1.3fr)_80px_120px]"
+      >
         <div className="flex min-w-0 items-center gap-3">
           {avatar}
 
@@ -80,7 +89,10 @@ function ReservationRow({ reservation }) {
       </div>
 
       {/* Tablet */}
-      <div className="hidden items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 md:grid md:grid-cols-[minmax(160px,1.5fr)_minmax(170px,1.3fr)_110px] xl:hidden">
+      <div
+        onClick={handleClick}
+        className="hidden cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-gray-50 md:grid md:grid-cols-[minmax(160px,1.5fr)_minmax(170px,1.3fr)_110px] xl:hidden"
+      >
         <div className="flex min-w-0 items-center gap-3">
           {avatar}
 
@@ -106,7 +118,7 @@ function ReservationRow({ reservation }) {
       </div>
 
       {/* Mobile */}
-      <div className="space-y-3 px-4 py-4 md:hidden">
+      <div onClick={handleClick} className="space-y-3 px-4 py-4 md:hidden">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             {avatar}

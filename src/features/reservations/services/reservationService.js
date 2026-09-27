@@ -24,3 +24,59 @@ export async function getReservations() {
 
   return data;
 }
+
+export async function getReservation(id) {
+  const { data, error } = await supabase
+    .from("reservations")
+    .select(
+      `
+      *,
+      customers (
+        full_name,
+        email,
+        phone
+      ),
+      tables (
+        table_number,
+        capacity,
+        location
+      )
+    `,
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function createReservation(newReservation) {
+  const { data, error } = await supabase
+    .from("reservations")
+    .insert([newReservation])
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
+export async function updateReservationStatus(id, status) {
+  const { data, error } = await supabase
+    .from("reservations")
+    .update({ status })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}

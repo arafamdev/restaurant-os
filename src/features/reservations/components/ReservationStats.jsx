@@ -10,11 +10,12 @@ function ReservationStats({ totalReservations, reservationsByStatus }) {
     RESERVATION_STATUS.SEATED,
     RESERVATION_STATUS.COMPLETED,
     RESERVATION_STATUS.CANCELLED,
+    RESERVATION_STATUS.NO_SHOW,
   ];
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-      <div className="grid grid-cols-2 divide-x divide-y divide-gray-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-y-0">
+      <div className="grid grid-cols-2 divide-x divide-y divide-gray-200 sm:grid-cols-3 lg:grid-cols-7 lg:divide-y-0">
         {/* Total */}
         <div className="flex flex-col items-center justify-center px-4 py-4">
           <span className="text-xs font-medium tracking-wide text-gray-400 uppercase">
@@ -37,7 +38,7 @@ function ReservationStats({ totalReservations, reservationsByStatus }) {
             </span>
 
             <span className="mt-1 text-2xl font-semibold text-gray-900">
-              {reservationsByStatus[status] ?? 0}
+              {reservationsByStatus?.[status] ?? 0}
             </span>
           </div>
         ))}

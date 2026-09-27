@@ -12,6 +12,7 @@ import { getReservationStats } from "../features/reservations/utils/reservationU
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import EmptyState from "../ui/EmptyState";
+import { useNavigate } from "react-router-dom";
 
 function Reservations() {
   const [search, setSearch] = useState("");
@@ -19,6 +20,8 @@ function Reservations() {
   const [selectedDate, setSelectedDate] = useState();
 
   const { isLoading, reservations, error } = useReservations();
+
+  const navigate = useNavigate();
 
   const { filteredReservations, emptyState } = useReservationFilters({
     reservations: reservations ?? [],
@@ -52,6 +55,7 @@ function Reservations() {
 
         <button
           type="button"
+          onClick={() => navigate("/reservations/new")}
           className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
         >
           + New reservation

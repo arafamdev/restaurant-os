@@ -10,3 +10,13 @@ export function formatReservationDate(startsAt, endsAt) {
 
   return `${date} · ${startTime}–${endTime}`;
 }
+
+export function createReservationDateTime(date, time) {
+  const [hours, minutes] = time.split(":").map(Number);
+
+  const reservationDate = new Date(date);
+
+  reservationDate.setHours(hours, minutes, 0, 0);
+
+  return reservationDate;
+}

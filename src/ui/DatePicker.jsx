@@ -1,11 +1,14 @@
 import { useCallback, useState } from "react";
+
 import { DayPicker } from "@daypicker/react";
+
 import { HiOutlineCalendarDays } from "react-icons/hi2";
+
 import { format } from "date-fns";
 
 import useOutsideClick from "../hooks/useOutsideClick";
 
-function DatePicker({ selected, onSelect }) {
+function DatePicker({ selected, onSelect, minDate, disabledDate }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const closeDatePicker = useCallback(() => {
@@ -13,6 +16,11 @@ function DatePicker({ selected, onSelect }) {
   }, []);
 
   const datePickerRef = useOutsideClick(closeDatePicker);
+
+  const disabledDays = [
+    minDate ? { before: minDate } : undefined,
+    disabledDate,
+  ].filter(Boolean);
 
   return (
     <div className="relative" ref={datePickerRef}>
@@ -23,6 +31,7 @@ function DatePicker({ selected, onSelect }) {
       >
         <span className="flex items-center gap-2">
           <HiOutlineCalendarDays className="h-5 w-5 text-gray-500" />
+
           {selected ? format(selected, "dd MMM yyyy") : "Select date"}
         </span>
       </button>
@@ -36,6 +45,7 @@ function DatePicker({ selected, onSelect }) {
               onSelect(date);
               setIsOpen(false);
             }}
+            disabled={disabledDays}
           />
 
           {selected && (
