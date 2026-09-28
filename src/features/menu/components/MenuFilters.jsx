@@ -1,10 +1,13 @@
+import Input from "../../../ui/Input";
 import Select from "../../../ui/Select";
 
 function MenuFilters({
+  search,
   group,
   categoryId,
   status,
   categories,
+  onSearchChange,
   onGroupChange,
   onCategoryChange,
   onStatusChange,
@@ -25,7 +28,14 @@ function MenuFilters({
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <Input
+        type="search"
+        placeholder="Search menu..."
+        value={search}
+        onChange={(event) => onSearchChange(event.target.value)}
+      />
+
       <Select
         value={group}
         onChange={onGroupChange}

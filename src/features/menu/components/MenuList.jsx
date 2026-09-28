@@ -2,7 +2,7 @@ import { HiOutlineBeaker, HiOutlineCake } from "react-icons/hi2";
 
 import MenuCategorySection from "./MenuCategorySection";
 
-function MenuList({ menuItems, categories }) {
+function MenuList({ menuItems, categories, onEdit, onToggleActive }) {
   const foodCategories = categories.filter(
     (category) => category.group_type === "food",
   );
@@ -34,6 +34,8 @@ function MenuList({ menuItems, categories }) {
                 key={category.id}
                 category={category}
                 menuItems={menuItems}
+                onEdit={onEdit}
+                onToggleActive={onToggleActive}
               />
             ))}
           </div>
@@ -53,6 +55,8 @@ function MenuList({ menuItems, categories }) {
                 key={category.id}
                 category={category}
                 menuItems={menuItems}
+                onEdit={onEdit}
+                onToggleActive={onToggleActive}
               />
             ))}
           </div>

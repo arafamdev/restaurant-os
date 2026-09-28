@@ -47,3 +47,29 @@ export async function getMenuCategories() {
 
   return data;
 }
+
+export async function createMenuItem(newMenuItem) {
+  const { data, error } = await supabase
+    .from("menu_items")
+    .insert([newMenuItem])
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
+
+export async function updateMenuItem(id, updatedMenuItem) {
+  const { data, error } = await supabase
+    .from("menu_items")
+    .update(updatedMenuItem)
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}

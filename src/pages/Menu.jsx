@@ -1,18 +1,28 @@
 import { useState } from "react";
 
+import Button from "../ui/Button";
+import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 
 import { useMenuItems } from "../features/menu/hooks/useMenuItems";
 import { useMenuCategories } from "../features/menu/hooks/useMenuCategories";
+import { useUpdateMenuItem } from "../features/menu/hooks/useUpdateMenuItem";
 
-import MenuList from "../features/menu/components/MenuList";
 import MenuFilters from "../features/menu/components/MenuFilters";
+import MenuList from "../features/menu/components/MenuList";
+import MenuItemForm from "../features/menu/components/MenuItemForm";
 
 function Menu() {
   const [group, setGroup] = useState("all");
   const [categoryId, setCategoryId] = useState("all");
   const [status, setStatus] = useState("all");
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+  const [menuItemToToggle, setMenuItemToToggle] = useState(null);
+
+  const [search, setSearch] = useState("");
 
   const {
     isLoading: isLoadingItems,
@@ -26,17 +36,19 @@ function Menu() {
     error: categoriesError,
   } = useMenuCategories();
 
-  const isLoading = isLoadingItems || isLoadingCategories;
+  const { updateItem, isUpdating } = useUpdateMenuItem();
 
+  const isLoading = isLoadingItems || isLoadingCategories;
   const error = itemsError || categoriesError;
 
-  if (isLoading) return <Spinner />;
-
-  if (error) {
-    return <ErrorMessage message={error.message} />;
-  }
-
   const filteredMenuItems = menuItems.filter((item) => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    const matchesSearch =
+      normalizedSearch === "" ||
+      item.name.toLowerCase().includes(normalizedSearch) ||
+      item.description?.toLowerCase().includes(normalizedSearch);
+
     const matchesGroup =
       group === "all" || item.menu_categories?.group_type === group;
 
@@ -49,31 +61,176 @@ function Menu() {
       (status === "unavailable" && item.is_active && !item.is_available) ||
       (status === "inactive" && !item.is_active);
 
-    return matchesGroup && matchesCategory && matchesStatus;
+    return matchesSearch && matchesGroup && matchesCategory && matchesStatus;
   });
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Menu</h1>
+  function handleEdit(menuItem) {
+    setSelectedMenuItem(menuItem);
+  }
 
-        <p className="mt-1 text-sm text-gray-500">
-          Manage restaurant menu items and categories.
-        </p>
+  function handleToggleActive(menuItem) {
+    setMenuItemToToggle(menuItem);
+  }
+
+  function handleConfirmToggleActive() {
+    if (!menuItemToToggle) return;
+
+    const nextIsActive = !menuItemToToggle.is_active;
+
+    updateItem(
+      {
+        id: menuItemToToggle.id,
+        updatedMenuItem: {
+          is_active: nextIsActive,
+        },
+      },
+      {
+        onSuccess: () => {
+          setMenuItemToToggle(null);
+        },
+      },
+    );
+  }
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error.message} />;
+  }
+
+  return (
+    <>
+      <div className="space-y-6">
+        {/* Page header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Menu</h1>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Manage your restaurant menu.
+            </p>
+          </div>
+
+          <Button onClick={() => setIsCreating(true)}>Add menu item</Button>
+        </div>
+
+        {/* Filters */}
+        <MenuFilters
+          search={search}
+          group={group}
+          categoryId={categoryId}
+          status={status}
+          categories={categories}
+          onSearchChange={setSearch}
+          onGroupChange={setGroup}
+          onCategoryChange={setCategoryId}
+          onStatusChange={setStatus}
+        />
+
+        {/* Menu list */}
+        <MenuList
+          menuItems={filteredMenuItems}
+          categories={categories}
+          onEdit={handleEdit}
+          onToggleActive={handleToggleActive}
+        />
       </div>
 
-      <MenuFilters
-        group={group}
-        categoryId={categoryId}
-        status={status}
-        categories={categories}
-        onGroupChange={setGroup}
-        onCategoryChange={setCategoryId}
-        onStatusChange={setStatus}
-      />
+      {/* Create menu item modal */}
+      {isCreating && (
+        <Modal onClose={() => setIsCreating(false)}>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Create menu item
+            </h2>
 
-      <MenuList menuItems={filteredMenuItems} categories={categories} />
-    </div>
+            <p className="mt-1 text-sm text-gray-500">
+              Add a new item to your restaurant menu.
+            </p>
+          </div>
+
+          <MenuItemForm onCloseModal={() => setIsCreating(false)} />
+        </Modal>
+      )}
+
+      {/* Edit menu item modal */}
+      {selectedMenuItem && (
+        <Modal
+          onClose={() => {
+            if (!isUpdating) {
+              setSelectedMenuItem(null);
+            }
+          }}
+        >
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Edit menu item
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">Update this menu item.</p>
+          </div>
+
+          <MenuItemForm
+            menuItemToEdit={selectedMenuItem}
+            onCloseModal={() => setSelectedMenuItem(null)}
+          />
+        </Modal>
+      )}
+
+      {/* Deactivate / Reactivate confirmation modal */}
+      {menuItemToToggle && (
+        <Modal
+          onClose={() => {
+            if (!isUpdating) {
+              setMenuItemToToggle(null);
+            }
+          }}
+        >
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              {menuItemToToggle.is_active
+                ? "Deactivate menu item"
+                : "Reactivate menu item"}
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-gray-500">
+              Are you sure you want to{" "}
+              {menuItemToToggle.is_active ? "deactivate" : "reactivate"}{" "}
+              <span className="font-medium text-gray-900">
+                {menuItemToToggle.name}
+              </span>
+              ?
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                type="button"
+                variation="secondary"
+                disabled={isUpdating}
+                onClick={() => setMenuItemToToggle(null)}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                type="button"
+                variation={menuItemToToggle.is_active ? "danger" : "primary"}
+                disabled={isUpdating}
+                onClick={handleConfirmToggleActive}
+              >
+                {isUpdating
+                  ? "Updating..."
+                  : menuItemToToggle.is_active
+                    ? "Deactivate"
+                    : "Reactivate"}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 }
 

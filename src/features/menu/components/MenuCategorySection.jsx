@@ -1,6 +1,6 @@
 import MenuRow from "./MenuRow";
 
-function MenuCategorySection({ category, menuItems }) {
+function MenuCategorySection({ category, menuItems, onEdit, onToggleActive }) {
   const categoryItems = menuItems.filter(
     (item) => item.category_id === category.id,
   );
@@ -23,7 +23,12 @@ function MenuCategorySection({ category, menuItems }) {
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         {categoryItems.map((menuItem) => (
-          <MenuRow key={menuItem.id} menuItem={menuItem} />
+          <MenuRow
+            key={menuItem.id}
+            menuItem={menuItem}
+            onEdit={onEdit}
+            onToggleActive={onToggleActive}
+          />
         ))}
       </div>
     </section>
