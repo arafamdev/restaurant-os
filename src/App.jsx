@@ -17,6 +17,7 @@ import EditTable from "./pages/EditTable";
 import NewReservation from "./pages/NewReservation";
 import ReservationDetails from "./pages/ReservationDetails";
 import DailyMenu from "./pages/DailyMenu";
+import RestaurantDay from "./pages/RestaurantDay";
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+
+            <Route path="/restaurant-day" element={<RestaurantDay />} />
 
             <Route path="/reservations" element={<Reservations />} />
             <Route path="/reservations/new" element={<NewReservation />} />
