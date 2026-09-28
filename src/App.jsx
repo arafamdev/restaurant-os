@@ -16,6 +16,7 @@ import TableDetails from "./pages/TableDetails";
 import EditTable from "./pages/EditTable";
 import NewReservation from "./pages/NewReservation";
 import ReservationDetails from "./pages/ReservationDetails";
+import DailyMenu from "./pages/DailyMenu";
 
 function App() {
   return (
@@ -43,7 +44,10 @@ function App() {
             <Route path="/tables/:tableId/edit" element={<EditTable />} />
 
             <Route path="/customers" element={<Customers />} />
+
             <Route path="/menu" element={<Menu />} />
+            <Route path="/daily-menu" element={<DailyMenu />} />
+
             <Route path="/orders" element={<Orders />} />
           </Route>
         </Route>

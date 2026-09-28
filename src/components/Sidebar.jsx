@@ -7,6 +7,7 @@ import {
   HiOutlineClipboardDocumentList,
   HiOutlineShoppingBag,
   HiOutlineXMark,
+  HiOutlineSun,
 } from "react-icons/hi2";
 
 import restaurantLogo from "../assets/logo/logo-light.svg";
@@ -45,6 +46,11 @@ const navItems = [
         to: "/menu",
         label: "Menu",
         icon: HiOutlineClipboardDocumentList,
+      },
+      {
+        to: "/daily-menu",
+        label: "Daily Menu",
+        icon: HiOutlineSun,
       },
       {
         to: "/orders",
