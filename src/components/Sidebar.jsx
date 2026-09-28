@@ -37,6 +37,11 @@ const navItems = [
         label: "Customers",
         icon: HiOutlineUsers,
       },
+      {
+        to: "/staff",
+        label: "Staff",
+        icon: HiOutlineUsers,
+      },
     ],
   },
   {

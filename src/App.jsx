@@ -12,6 +12,7 @@ import PageNotFound from "./pages/PageNotFound";
 import Dashboard from "./pages/Dashboard";
 import RestaurantDay from "./pages/RestaurantDay";
 import Staff from "./pages/Staff";
+import EmployeeDetails from "./pages/EmployeeDetails";
 
 // Reservations
 import Reservations from "./pages/Reservations";
@@ -45,6 +46,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/restaurant-day" element={<RestaurantDay />} />
             <Route path="/staff" element={<Staff />} />
+            <Route path="/staff/:employeeId" element={<EmployeeDetails />} />
 
             {/* Reservations */}
             <Route path="/reservations" element={<Reservations />} />

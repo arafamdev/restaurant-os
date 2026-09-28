@@ -39,7 +39,7 @@ function TableDetails() {
 
   return (
     <div>
-      <BackButton />
+      <BackButton to="/reservations" label="Back to Reservations" />
 
       <h1 className="mt-5 text-2xl font-semibold text-gray-900">
         Table {table.table_number}
@@ -67,14 +67,14 @@ function TableDetails() {
 
           <div>
             <p className="text-sm text-gray-500">Location</p>
-            <p className="mt-1 font-medium capitalize text-gray-900">
+            <p className="mt-1 font-medium text-gray-900 capitalize">
               {table.location}
             </p>
           </div>
 
           <div>
             <p className="text-sm text-gray-500">Status</p>
-            <p className="mt-1 font-medium capitalize text-gray-900">
+            <p className="mt-1 font-medium text-gray-900 capitalize">
               {table.status}
             </p>
           </div>

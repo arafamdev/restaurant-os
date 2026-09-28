@@ -12,7 +12,13 @@ function Staff() {
   }
 
   if (error) {
-    return <ErrorMessage message={error.message} />;
+    return (
+      <ErrorMessage
+        message={error.message}
+        backLabel="Back to Staff"
+        backTo="/staff"
+      />
+    );
   }
 
   return (

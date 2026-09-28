@@ -1,5 +1,4 @@
 import { useParams, Link } from "react-router-dom";
-import { HiOutlineArrowLeft } from "react-icons/hi2";
 
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
@@ -14,6 +13,7 @@ import {
 } from "../constants";
 
 import { formatReservationDate } from "../utils/dateUtils";
+import BackButton from "../ui/BackButton";
 
 function ReservationDetails() {
   const { reservationId } = useParams();
@@ -53,8 +53,7 @@ function ReservationDetails() {
           to="/reservations"
           className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-gray-900"
         >
-          <HiOutlineArrowLeft className="h-4 w-4" />
-          Back to reservations
+          <BackButton to="/tables" label="Back to Tables" />
         </Link>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

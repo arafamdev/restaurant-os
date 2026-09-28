@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import BackButton from "../../../ui/BackButton";
+
 function EmployeeList({ employees }) {
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
@@ -19,9 +22,12 @@ function EmployeeList({ employees }) {
             {employees.map((employee) => (
               <tr key={employee.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
-                  <p className="font-medium text-gray-900">
+                  <Link
+                    to={`/staff/${employee.id}`}
+                    className="font-medium text-gray-900 hover:text-emerald-600"
+                  >
                     {employee.full_name}
-                  </p>
+                  </Link>
                 </td>
 
                 <td className="px-6 py-4 text-gray-600">
