@@ -3,21 +3,32 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import Customers from "./pages/Customers";
-import Dashboard from "./pages/Dashboard";
+// Public pages
 import Home from "./pages/Home";
-import Menu from "./pages/Menu";
-import Orders from "./pages/Orders";
-import Reservations from "./pages/Reservations";
-import Tables from "./pages/Tables";
 import Login from "./pages/Login";
+import PageNotFound from "./pages/PageNotFound";
+
+// Main pages
+import Dashboard from "./pages/Dashboard";
+import RestaurantDay from "./pages/RestaurantDay";
+import Staff from "./pages/Staff";
+
+// Reservations
+import Reservations from "./pages/Reservations";
+import NewReservation from "./pages/NewReservation";
+import ReservationDetails from "./pages/ReservationDetails";
+
+// Tables
+import Tables from "./pages/Tables";
 import CreateTable from "./pages/CreateTable";
 import TableDetails from "./pages/TableDetails";
 import EditTable from "./pages/EditTable";
-import NewReservation from "./pages/NewReservation";
-import ReservationDetails from "./pages/ReservationDetails";
+
+// Other pages
+import Customers from "./pages/Customers";
+import Menu from "./pages/Menu";
 import DailyMenu from "./pages/DailyMenu";
-import RestaurantDay from "./pages/RestaurantDay";
+import Orders from "./pages/Orders";
 
 function App() {
   return (
@@ -30,10 +41,12 @@ function App() {
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
+            {/* Main */}
             <Route path="/dashboard" element={<Dashboard />} />
-
             <Route path="/restaurant-day" element={<RestaurantDay />} />
+            <Route path="/staff" element={<Staff />} />
 
+            {/* Reservations */}
             <Route path="/reservations" element={<Reservations />} />
             <Route path="/reservations/new" element={<NewReservation />} />
             <Route
@@ -41,17 +54,20 @@ function App() {
               element={<ReservationDetails />}
             />
 
+            {/* Tables */}
             <Route path="/tables" element={<Tables />} />
             <Route path="/tables/new" element={<CreateTable />} />
             <Route path="/tables/:tableId" element={<TableDetails />} />
             <Route path="/tables/:tableId/edit" element={<EditTable />} />
 
+            {/* Other */}
             <Route path="/customers" element={<Customers />} />
-
             <Route path="/menu" element={<Menu />} />
             <Route path="/daily-menu" element={<DailyMenu />} />
-
             <Route path="/orders" element={<Orders />} />
+
+            {/* 404 */}
+            <Route path="*" element={<PageNotFound />} />
           </Route>
         </Route>
       </Routes>
