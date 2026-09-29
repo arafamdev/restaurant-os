@@ -21,7 +21,7 @@ const pageTitles = {
 function Header({ onMenuClick }) {
   const location = useLocation();
 
-  const { logout } = useAuth();
+  const { logout, user, isLoading } = useAuth();
 
   const pageTitle = pageTitles[location.pathname];
 
@@ -72,7 +72,9 @@ function Header({ onMenuClick }) {
 
         {/* User */}
         <div className="hidden border-l pl-4 sm:block">
-          <p className="text-sm font-medium text-gray-900">Arafam</p>
+          <p className="text-sm font-medium text-gray-900">
+            {isLoading ? "loading" : user?.email}
+          </p>
           <p className="text-xs text-gray-500">Admin</p>
         </div>
 
