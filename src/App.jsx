@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Public pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import AcceptInvite from "./features/auth/AcceptInvite";
 import PageNotFound from "./pages/PageNotFound";
 
 // Main pages
@@ -31,6 +32,7 @@ import Menu from "./pages/Menu";
 import DailyMenu from "./pages/DailyMenu";
 import Orders from "./pages/Orders";
 
+
 function App() {
   return (
     <BrowserRouter>
@@ -38,6 +40,7 @@ function App() {
         {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/accept-invite" element={<AcceptInvite />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
