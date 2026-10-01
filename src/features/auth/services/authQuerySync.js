@@ -1,6 +1,7 @@
 import { supabase } from "../../../services/supabase";
 
 const AUTH_QUERY_KEY = ["auth"];
+
 const CURRENT_USER_CONTEXT_QUERY_KEY = ["current-user-context"];
 
 export function setupAuthQuerySync(queryClient) {
@@ -10,8 +11,16 @@ export function setupAuthQuerySync(queryClient) {
     switch (event) {
       case "INITIAL_SESSION":
       case "SIGNED_IN":
-      case "TOKEN_REFRESHED":
       case "USER_UPDATED":
+        queryClient.setQueryData(AUTH_QUERY_KEY, session);
+
+        queryClient.invalidateQueries({
+          queryKey: CURRENT_USER_CONTEXT_QUERY_KEY,
+        });
+
+        break;
+
+      case "TOKEN_REFRESHED":
         queryClient.setQueryData(AUTH_QUERY_KEY, session);
         break;
 
