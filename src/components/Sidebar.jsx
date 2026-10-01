@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+
 import {
   HiOutlineHome,
   HiOutlineCalendarDays,
@@ -8,10 +9,13 @@ import {
   HiOutlineShoppingBag,
   HiOutlineXMark,
   HiOutlineSun,
+  HiOutlineBuildingStorefront,
 } from "react-icons/hi2";
 
 import restaurantLogo from "../assets/logo/logo-light.svg";
 import restaurantMark from "../assets/logo/mark-light.svg";
+
+import { useRestaurantDay } from "../features/restaurantDay/hooks/useRestaurantDay";
 
 const navItems = [
   {
@@ -21,6 +25,12 @@ const navItems = [
         to: "/dashboard",
         label: "Dashboard",
         icon: HiOutlineHome,
+      },
+      {
+        to: "/restaurant-day",
+        label: "Restaurant",
+        icon: HiOutlineBuildingStorefront,
+        isRestaurantDay: true,
       },
       {
         to: "/reservations",
@@ -67,6 +77,10 @@ const navItems = [
 ];
 
 function Sidebar({ isSidebarOpen, onClose }) {
+  const { restaurantDay, isLoading } = useRestaurantDay();
+
+  const isRestaurantOpen = Boolean(restaurantDay);
+
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-50 h-screen w-64 border-r bg-white px-4 py-6 transition-transform duration-300 md:static md:h-auto md:w-auto md:translate-x-0 md:transition-none ${
@@ -123,9 +137,39 @@ function Sidebar({ isSidebarOpen, onClose }) {
                       }`
                     }
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5 shrink-0" />
 
-                    <span className="md:hidden lg:inline">{item.label}</span>
+                    <span className="flex min-w-0 flex-1 items-center justify-between md:hidden lg:flex">
+                      <span>{item.label}</span>
+
+                      {item.isRestaurantDay && (
+                        <span className="ml-2 flex items-center gap-1 text-xs">
+                          {isLoading ? (
+                            <span className="h-2 w-2 rounded-full bg-gray-300" />
+                          ) : (
+                            <>
+                              <span
+                                className={`h-2 w-2 rounded-full ${
+                                  isRestaurantOpen
+                                    ? "bg-green-500"
+                                    : "bg-red-500"
+                                }`}
+                              />
+
+                              <span
+                                className={
+                                  isRestaurantOpen
+                                    ? "text-green-600"
+                                    : "text-red-500"
+                                }
+                              >
+                                {isRestaurantOpen ? "Open" : "Closed"}
+                              </span>
+                            </>
+                          )}
+                        </span>
+                      )}
+                    </span>
                   </NavLink>
                 );
               })}
