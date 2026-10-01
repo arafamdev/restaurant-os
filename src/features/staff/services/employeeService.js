@@ -35,6 +35,7 @@ export async function getEmployeeById(employeeId) {
       full_name,
       phone,
       status,
+      restaurant_id,
       created_at,
       roles (
         id,
@@ -72,6 +73,49 @@ export async function getRoles() {
     .from("roles")
     .select("id, name")
     .order("id");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// CREATE EMPLOYEE
+export async function createEmployee({
+  email,
+  full_name,
+  phone,
+  role_id,
+  restaurant_id,
+}) {
+  const { data, error } = await supabase.functions.invoke("create-employee", {
+    body: {
+      email,
+      full_name,
+      phone,
+      role_id,
+      restaurant_id,
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (data?.message && !data?.success) {
+    throw new Error(data.message);
+  }
+
+  return data;
+}
+
+// GET ALL RESTAURANTS
+export async function getRestaurants() {
+  const { data, error } = await supabase
+    .from("restaurants")
+    .select("id, name")
+    .order("name");
 
   if (error) {
     throw new Error(error.message);
