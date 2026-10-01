@@ -1,5 +1,4 @@
 import { useLocation } from "react-router-dom";
-
 import {
   HiOutlineBell,
   HiOutlineMoon,
@@ -8,6 +7,7 @@ import {
 } from "react-icons/hi2";
 
 import useAuth from "../features/auth/hooks/useAuth";
+import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
 
 const pageTitles = {
   "/dashboard": "Dashboard",
@@ -21,9 +21,27 @@ const pageTitles = {
 function Header({ onMenuClick }) {
   const location = useLocation();
 
-  const { logout, user, isLoading } = useAuth();
+  const { logout, isLoading: isAuthLoading } = useAuth();
+
+  const { userContext, isLoading: isContextLoading } = useCurrentUserContext();
 
   const pageTitle = pageTitles[location.pathname];
+
+  const isLoading = isAuthLoading || isContextLoading;
+
+  const displayName = userContext?.full_name;
+  const email = userContext?.email;
+
+  const roleLabel = userContext?.is_platform_admin
+    ? "Platform Admin"
+    : userContext?.role_name
+      ? userContext.role_name
+          .split("_")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
+      : null;
+
+  const restaurantName = userContext?.restaurant_name || "RestaurantOS";
 
   async function handleLogout() {
     await logout();
@@ -45,7 +63,10 @@ function Header({ onMenuClick }) {
 
         {/* Page title */}
         <div>
-          <p className="text-sm text-gray-500">RestaurantOS</p>
+          <p className="text-sm text-gray-500">
+            {isLoading ? "Loading..." : restaurantName}
+          </p>
+
           <h1 className="text-xl font-semibold text-gray-900">{pageTitle}</h1>
         </div>
       </div>
@@ -73,9 +94,12 @@ function Header({ onMenuClick }) {
         {/* User */}
         <div className="hidden border-l pl-4 sm:block">
           <p className="text-sm font-medium text-gray-900">
-            {isLoading ? "loading" : user?.email}
+            {isLoading ? "Loading..." : displayName}
           </p>
-          <p className="text-xs text-gray-500">Admin</p>
+
+          <p className="text-xs text-gray-500">{isLoading ? "" : email}</p>
+
+          <p className="text-xs text-gray-400">{isLoading ? "" : roleLabel}</p>
         </div>
 
         {/* Logout */}
