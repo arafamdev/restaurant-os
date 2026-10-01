@@ -1,9 +1,8 @@
 import { supabase } from "../../../services/supabase";
 
-// Busca o funcionário através do ID.
-//
-// Usamos esta função para obter o nome do funcionário
-// responsável pela abertura ou fechamento.
+// Busca um funcionário pelo ID.
+// A RLS garante que apenas funcionários acessíveis
+// ao utilizador autenticado podem ser consultados.
 async function getEmployeeById(employeeId) {
   if (!employeeId) {
     return null;
@@ -22,13 +21,8 @@ async function getEmployeeById(employeeId) {
   return data;
 }
 
-// Adiciona os dados dos funcionários ao Restaurant Day.
-//
-// restaurant_days guarda apenas:
-// opened_by
-// closed_by
-//
-// Aqui transformamos esses IDs nos respectivos funcionários.
+// Adiciona os dados dos funcionários responsáveis
+// pela abertura e pelo fecho do Restaurant Day.
 async function enrichRestaurantDay(restaurantDay) {
   if (!restaurantDay) {
     return null;
@@ -48,15 +42,15 @@ async function enrichRestaurantDay(restaurantDay) {
 
 // Busca o Restaurant Day atualmente ativo.
 //
-// Um Restaurant Day ativo pode estar:
-// - open
-// - closing
+// A RLS limita os resultados ao restaurante do utilizador.
+// Um dia ativo pode estar em estado "open" ou "closing".
 export async function getActiveRestaurantDay() {
   const { data, error } = await supabase
     .from("restaurant_days")
     .select(
       `
       id,
+      restaurant_id,
       business_date,
       status,
       opened_at,
@@ -76,16 +70,18 @@ export async function getActiveRestaurantDay() {
   return enrichRestaurantDay(data);
 }
 
-// Busca o último Restaurant Day.
+// Busca o Restaurant Day mais recente.
 //
-// Ao contrário de getActiveRestaurantDay(),
-// esta função também encontra dias com status "closed".
+// A RLS limita os resultados ao restaurante do utilizador.
+// Para um utilizador normal, o resultado pertence sempre
+// ao seu restaurante.
 export async function getLatestRestaurantDay() {
   const { data, error } = await supabase
     .from("restaurant_days")
     .select(
       `
       id,
+      restaurant_id,
       business_date,
       status,
       opened_at,
@@ -111,7 +107,10 @@ export async function getLatestRestaurantDay() {
 
 // Abre um novo Restaurant Day.
 //
-// A abertura é executada através da RPC PostgreSQL.
+// O PostgreSQL determina automaticamente:
+// - o funcionário responsável;
+// - o restaurante;
+// - as permissions necessárias.
 export async function openRestaurantDay({ businessDate, openingCash, notes }) {
   const { data, error } = await supabase.rpc("open_restaurant_day", {
     p_business_date: businessDate,
@@ -128,8 +127,11 @@ export async function openRestaurantDay({ businessDate, openingCash, notes }) {
 
 // Fecha o Restaurant Day atualmente ativo.
 //
-// O PostgreSQL descobre automaticamente o employee
-// através de auth.uid().
+// O PostgreSQL determina automaticamente:
+// - o funcionário responsável;
+// - o restaurante;
+// - o Restaurant Day que deve ser fechado;
+// - as permissions necessárias.
 export async function closeRestaurantDay({ closingCash, notes }) {
   const { data, error } = await supabase.rpc("close_restaurant_day", {
     p_closing_cash: Number(closingCash),
