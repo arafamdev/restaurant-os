@@ -1,15 +1,42 @@
-import { useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import AuthContext from "../../../context/AuthContext";
+import { getSession, signOut } from "../services/authService";
+
+const AUTH_QUERY_KEY = ["auth"];
 
 function useAuth() {
-  const context = useContext(AuthContext);
+  const queryClient = useQueryClient();
 
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+  const {
+    data: session,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: AUTH_QUERY_KEY,
+    queryFn: getSession,
+    staleTime: Infinity,
+  });
+
+  async function logout() {
+    await signOut();
+
+    queryClient.setQueryData(AUTH_QUERY_KEY, null);
+
+    queryClient.removeQueries({
+      queryKey: ["current-user-context"],
+    });
   }
 
-  return context;
+  const user = session?.user ?? null;
+
+  return {
+    user,
+    session: session ?? null,
+    isLoading,
+    error,
+    logout,
+    isAuthenticated: Boolean(user),
+  };
 }
 
 export default useAuth;

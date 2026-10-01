@@ -7,7 +7,7 @@ import {
   HiOutlineArrowRightOnRectangle,
 } from "react-icons/hi2";
 
-import useAuth from "../hooks/useAuth";
+import useAuth from "../features/auth/hooks/useAuth";
 
 const pageTitles = {
   "/dashboard": "Dashboard",
