@@ -1,6 +1,14 @@
 import Button from "../../../ui/Button";
 
+import { useRestaurantDayPermissions } from "../hooks/useRestaurantDayPermissions";
+
 function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
+  const {
+    canOpenRestaurant,
+    canCloseRestaurant,
+    isLoading: isPermissionLoading,
+  } = useRestaurantDayPermissions();
+
   if (!restaurantDay) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
@@ -19,7 +27,9 @@ function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
             </p>
           </div>
 
-          <Button onClick={onOpen}>Open Restaurant Day</Button>
+          {!isPermissionLoading && canOpenRestaurant && (
+            <Button onClick={onOpen}>Open Restaurant Day</Button>
+          )}
         </div>
       </div>
     );
@@ -54,7 +64,7 @@ function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
           </p>
         </div>
 
-        {!isClosing && (
+        {!isClosing && !isPermissionLoading && canCloseRestaurant && (
           <Button variation="danger" onClick={onClose}>
             Close Restaurant Day
           </Button>
