@@ -24,27 +24,11 @@ export async function getEmployees() {
 
   return data;
 }
-
 // GET SINGLE EMPLOYEE BY ID
 export async function getEmployeeById(employeeId) {
-  const { data, error } = await supabase
-    .from("employees")
-    .select(
-      `
-      id,
-      full_name,
-      phone,
-      status,
-      restaurant_id,
-      created_at,
-      roles (
-        id,
-        name
-      )
-    `,
-    )
-    .eq("id", employeeId)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("get_employee_details", {
+    p_employee_id: Number(employeeId),
+  });
 
   if (error) {
     throw new Error(error.message);

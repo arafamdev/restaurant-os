@@ -128,57 +128,67 @@ function EmployeeDetails() {
         <p className="mt-1 text-sm text-gray-500">Employee details</p>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <p className="text-sm text-gray-500">Phone</p>
+      {/* Info */}
 
-            <p className="mt-1 font-medium text-gray-900">
-              {employee.phone || "—"}
-            </p>
-          </div>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div>
+          <p className="text-sm text-gray-500">Email</p>
+          <p className="mt-1 font-medium text-gray-900">
+            {employee.email || "—"}
+          </p>
+        </div>
 
-          <div>
-            <p className="text-sm text-gray-500">Role</p>
+        <div>
+          <p className="text-sm text-gray-500">Phone</p>
+          <p className="mt-1 font-medium text-gray-900">
+            {employee.phone || "—"}
+          </p>
+        </div>
 
-            <p className="mt-1 font-medium text-gray-900 capitalize">
-              {employee.roles?.name || "Unknown"}
-            </p>
-          </div>
+        <div>
+          <p className="text-sm text-gray-500">Role</p>
+          <p className="mt-1 font-medium text-gray-900 capitalize">
+            {employee.role_name || "Unknown"}
+          </p>
+        </div>
 
-          <div>
-            <p className="text-sm text-gray-500">Status</p>
+        <div>
+          <p className="text-sm text-gray-500">Restaurant</p>
+          <p className="mt-1 font-medium text-gray-900">
+            {employee.restaurant_name || "Unknown"}
+          </p>
+        </div>
 
+        <div>
+          <p className="text-sm text-gray-500">Status</p>
+
+          <span
+            className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
+              employee.status === "active"
+                ? "bg-green-100 text-green-700"
+                : "bg-gray-100 text-gray-600"
+            }`}
+          >
             <span
-              className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
-                employee.status === "active"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-600"
+              className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
+                employee.status === "active" ? "bg-green-500" : "bg-gray-400"
               }`}
-            >
-              <span
-                className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
-                  employee.status === "active" ? "bg-green-500" : "bg-gray-400"
-                }`}
-              />
+            />
 
-              {employee.status}
-            </span>
-          </div>
+            {employee.status}
+          </span>
+        </div>
 
-          <div>
-            <p className="text-sm text-gray-500">Employee ID</p>
+        <div>
+          <p className="text-sm text-gray-500">Employee ID</p>
+          <p className="mt-1 font-medium text-gray-900">{employee.id}</p>
+        </div>
 
-            <p className="mt-1 font-medium text-gray-900">{employee.id}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Created</p>
-
-            <p className="mt-1 font-medium text-gray-900">
-              {format(new Date(employee.created_at), "dd/MM/yyyy, HH:mm")}
-            </p>
-          </div>
+        <div>
+          <p className="text-sm text-gray-500">Created</p>
+          <p className="mt-1 font-medium text-gray-900">
+            {format(new Date(employee.created_at), "dd/MM/yyyy, HH:mm")}
+          </p>
         </div>
       </div>
 
