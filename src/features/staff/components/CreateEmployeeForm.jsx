@@ -7,7 +7,7 @@ import Select from "../../../ui/Select";
 
 import { useCreateEmployee } from "../hooks/useCreateEmployee";
 import { useRestaurants } from "../hooks/useRestaurants";
-import { useRoles } from "../hooks/useRole";
+import { useRoles } from "../hooks/useRoles";
 
 function CreateEmployeeForm({ onClose, userContext }) {
   const [fullName, setFullName] = useState("");
@@ -16,14 +16,20 @@ function CreateEmployeeForm({ onClose, userContext }) {
   const [roleId, setRoleId] = useState("");
   const [restaurantId, setRestaurantId] = useState("");
 
-  const { roles, isLoading: isLoadingRoles } = useRoles();
+  const isPlatformAdmin = userContext?.is_platform_admin;
+  const isManager = userContext?.role_name === "manager";
 
-  const { restaurants, isLoading: isLoadingRestaurants } = useRestaurants();
+  const { roles, isLoading: isLoadingRoles, error: rolesError } = useRoles();
+
+  const {
+    restaurants,
+    isLoading: isLoadingRestaurants,
+    error: restaurantsError,
+  } = useRestaurants(isPlatformAdmin);
 
   const { createEmployee, isPending, error } = useCreateEmployee();
 
-  const isPlatformAdmin = userContext?.is_platform_admin;
-  const isManager = userContext?.role_name === "manager";
+  const formError = error || rolesError || restaurantsError;
 
   // Usar o primeiro role disponível como valor inicial.
   const selectedRoleId = roleId || roles?.[0]?.id || "";
@@ -175,9 +181,9 @@ function CreateEmployeeForm({ onClose, userContext }) {
         </div>
       )}
 
-      {error && (
+      {formError && (
         <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error.message}
+          {formError.message}
         </p>
       )}
 

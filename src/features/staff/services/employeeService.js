@@ -84,6 +84,18 @@ export async function createEmployee({
   });
 
   if (error) {
+    if (error.context) {
+      const errorBody = await error.context.json().catch(() => null);
+
+      if (errorBody?.code === "email_exists") {
+        throw new Error("This email address is already registered.");
+      }
+
+      if (errorBody?.message) {
+        throw new Error(errorBody.message);
+      }
+    }
+
     throw new Error(error.message);
   }
 

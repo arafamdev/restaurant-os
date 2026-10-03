@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getRestaurants } from "../services/employeeService";
 
-export function useRestaurants() {
+export function useRestaurants(enabled = true) {
   const {
     isLoading,
     data: restaurants,
@@ -10,6 +10,7 @@ export function useRestaurants() {
   } = useQuery({
     queryKey: ["restaurants"],
     queryFn: getRestaurants,
+    enabled,
   });
 
   return {

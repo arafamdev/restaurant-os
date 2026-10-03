@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import { useEmployee } from "../features/staff/hooks/useEmployee";
-import { useRoles } from "../features/staff/hooks/useRole";
+import { useRoles } from "../features/staff/hooks/useRoles";
 import { useChangeEmployeeRole } from "../features/staff/hooks/useChangeEmployeeRole";
 import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
 
