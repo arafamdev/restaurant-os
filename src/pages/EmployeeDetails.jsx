@@ -7,6 +7,7 @@ import { useEmployee } from "../features/staff/hooks/useEmployee";
 import { useRoles } from "../features/staff/hooks/useRoles";
 import { useChangeEmployeeRole } from "../features/staff/hooks/useChangeEmployeeRole";
 import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
+import { useUpdateEmployeeStatus } from "../features/staff/hooks/useUpdateEmployeeStatus";
 
 import BackButton from "../ui/BackButton";
 import Button from "../ui/Button";
@@ -38,6 +39,12 @@ function EmployeeDetails() {
     isPending: isChangingRole,
     error: changeRoleError,
   } = useChangeEmployeeRole();
+
+  const {
+    updateStatus,
+    isPending: isUpdatingStatus,
+    error: updateStatusError,
+  } = useUpdateEmployeeStatus();
 
   if (isEmployeeLoading || isRolesLoading || isUserContextLoading) {
     return <Spinner />;
@@ -88,6 +95,11 @@ function EmployeeDetails() {
     (userContext?.role_name === "manager" &&
       userContext?.restaurant_id === employee.restaurant_id);
 
+  const canChangeStatus =
+    userContext?.is_platform_admin ||
+    (userContext?.role_name === "manager" &&
+      userContext?.restaurant_id === employee.restaurant_id);
+
   const currentRoleId = employee.roles?.id;
 
   const selectedRole = selectedRoleId || currentRoleId || "";
@@ -111,6 +123,35 @@ function EmployeeDetails() {
       {
         onSuccess: () => {
           toast.success("Employee role updated successfully.");
+        },
+      },
+    );
+  }
+
+  function handleStatusChange() {
+    const nextStatus = employee.status === "active" ? "inactive" : "active";
+
+    if (
+      nextStatus === "inactive" &&
+      !window.confirm(
+        `Are you sure you want to deactivate ${employee.full_name}?`,
+      )
+    ) {
+      return;
+    }
+
+    updateStatus(
+      {
+        employeeId: employee.id,
+        status: nextStatus,
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            nextStatus === "active"
+              ? "Employee activated successfully."
+              : "Employee deactivated successfully.",
+          );
         },
       },
     );
@@ -226,6 +267,40 @@ function EmployeeDetails() {
               }
             >
               {isChangingRole ? "Updating..." : "Update Role"}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {canChangeStatus && (
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Employee status
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Activate or deactivate this employee.
+            </p>
+          </div>
+
+          {updateStatusError && (
+            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {updateStatusError.message}
+            </p>
+          )}
+
+          <div className="mt-5 flex justify-end">
+            <Button
+              onClick={handleStatusChange}
+              disabled={isUpdatingStatus}
+              variation={employee.status === "active" ? "danger" : "primary"}
+            >
+              {isUpdatingStatus
+                ? "Updating..."
+                : employee.status === "active"
+                  ? "Deactivate Employee"
+                  : "Activate Employee"}
             </Button>
           </div>
         </div>

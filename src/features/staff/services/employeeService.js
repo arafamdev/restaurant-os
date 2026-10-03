@@ -2,6 +2,8 @@ import { supabase } from "../../../services/supabase";
 
 // GET ALL EMPLOYEES
 export async function getEmployees() {
+  console.log("=== GET EMPLOYEES ===");
+
   const { data, error } = await supabase
     .from("employees")
     .select(
@@ -18,12 +20,16 @@ export async function getEmployees() {
     )
     .order("full_name");
 
+  console.log("EMPLOYEES DATA:", data);
+  console.log("EMPLOYEES ERROR:", error);
+
   if (error) {
     throw new Error(error.message);
   }
 
   return data;
 }
+
 // GET SINGLE EMPLOYEE BY ID
 export async function getEmployeeById(employeeId) {
   const { data, error } = await supabase.rpc("get_employee_details", {
@@ -112,6 +118,20 @@ export async function getRestaurants() {
     .from("restaurants")
     .select("id, name")
     .order("name");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// UPDATE EMPLOYEE STATUS
+export async function updateEmployeeStatus(employeeId, status) {
+  const { data, error } = await supabase.rpc("update_employee_status", {
+    p_employee_id: employeeId,
+    p_status: status,
+  });
 
   if (error) {
     throw new Error(error.message);
