@@ -1,116 +1,109 @@
 import { useLocation } from "react-router-dom";
+
 import {
   HiOutlineBell,
   HiOutlineMoon,
   HiOutlineBars3,
-  HiOutlineArrowRightOnRectangle,
 } from "react-icons/hi2";
 
-import useAuth from "../features/auth/hooks/useAuth";
 import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
+import ProfileMenu from "../features/profile/components/ProfileMenu";
 
 const pageTitles = {
   "/dashboard": "Dashboard",
+  "/restaurant-day": "Restaurant",
   "/reservations": "Reservations",
   "/tables": "Tables",
   "/customers": "Customers",
+  "/staff": "Staff",
   "/menu": "Menu",
+  "/daily-menu": "Daily Menu",
   "/orders": "Orders",
+  "/profile": "Profile",
 };
 
 function Header({ onMenuClick }) {
   const location = useLocation();
 
-  const { logout, isLoading: isAuthLoading } = useAuth();
+  const {
+    userContext,
+    isLoading,
+  } = useCurrentUserContext();
 
-  const { userContext, isLoading: isContextLoading } = useCurrentUserContext();
+  const pageTitle =
+    pageTitles[location.pathname] || "RestaurantOS";
 
-  const pageTitle = pageTitles[location.pathname];
-
-  const isLoading = isAuthLoading || isContextLoading;
-
-  const displayName = userContext?.full_name;
-  const email = userContext?.email;
-
-  const roleLabel = userContext?.is_platform_admin
-    ? "Platform Admin"
-    : userContext?.role_name
-      ? userContext.role_name
-          .split("_")
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ")
-      : null;
-
-  const restaurantName = userContext?.restaurant_name || "RestaurantOS";
-
-  async function handleLogout() {
-    await logout();
-  }
+  const restaurantName =
+    userContext?.restaurant_name || "RestaurantOS";
 
   return (
-    <header className="flex h-20 items-center justify-between border-b bg-white px-4 md:px-8">
-      {/* Page information */}
-      <div className="flex items-center gap-4">
-        {/* Mobile menu */}
-        <button
-          type="button"
-          onClick={onMenuClick}
-          aria-label="Open navigation menu"
-          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 md:hidden"
-        >
-          <HiOutlineBars3 className="h-6 w-6" />
-        </button>
+    <header className="sticky top-0 z-30 h-20 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl">
+      <div className="flex h-full items-center justify-between px-4 sm:px-6 lg:px-8 xl:px-10">
+        {/* Left */}
+        <div className="flex min-w-0 items-center gap-3">
+          {/* Mobile menu */}
+          <button
+            type="button"
+            onClick={onMenuClick}
+            aria-label="Open navigation menu"
+            className="rounded-xl p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950 lg:hidden"
+          >
+            <HiOutlineBars3 className="h-6 w-6" />
+          </button>
 
-        {/* Page title */}
-        <div>
-          <p className="text-sm text-gray-500">
-            {isLoading ? "Loading..." : restaurantName}
-          </p>
+          <div className="min-w-0">
+            {/* Restaurant */}
+            <div className="flex items-center gap-2">
+              <span className="truncate text-xs font-medium text-gray-400">
+                {isLoading
+                  ? "Loading..."
+                  : restaurantName}
+              </span>
 
-          <h1 className="text-xl font-semibold text-gray-900">{pageTitle}</h1>
-        </div>
-      </div>
+              {!isLoading && (
+                <span className="hidden h-1 w-1 rounded-full bg-gray-300 sm:block" />
+              )}
 
-      {/* Header actions */}
-      <div className="flex items-center gap-2 md:gap-4">
-        {/* Notifications */}
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-        >
-          <HiOutlineBell className="h-5 w-5" />
-        </button>
+              <span className="hidden text-xs text-gray-400 sm:block">
+                RestaurantOS
+              </span>
+            </div>
 
-        {/* Theme */}
-        <button
-          type="button"
-          aria-label="Toggle dark mode"
-          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-        >
-          <HiOutlineMoon className="h-5 w-5" />
-        </button>
-
-        {/* User */}
-        <div className="hidden border-l pl-4 sm:block">
-          <p className="text-sm font-medium text-gray-900">
-            {isLoading ? "Loading..." : displayName}
-          </p>
-
-          <p className="text-xs text-gray-500">{isLoading ? "" : email}</p>
-
-          <p className="text-xs text-gray-400">{isLoading ? "" : roleLabel}</p>
+            {/* Page title */}
+            <h1 className="mt-0.5 truncate text-lg font-semibold tracking-tight text-gray-950 sm:text-xl">
+              {pageTitle}
+            </h1>
+          </div>
         </div>
 
-        {/* Logout */}
-        <button
-          type="button"
-          onClick={handleLogout}
-          aria-label="Logout"
-          className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
-        >
-          <HiOutlineArrowRightOnRectangle className="h-5 w-5" />
-        </button>
+        {/* Right */}
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {/* Notifications */}
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="relative rounded-xl p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950"
+          >
+            <HiOutlineBell className="h-[19px] w-[19px]" />
+
+            <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-red-500 ring-2 ring-white" />
+          </button>
+
+          {/* Theme */}
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            className="rounded-xl p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-950"
+          >
+            <HiOutlineMoon className="h-[19px] w-[19px]" />
+          </button>
+
+          {/* Divider */}
+          <div className="mx-1 hidden h-8 w-px bg-gray-200 sm:block" />
+
+          {/* Profile */}
+          <ProfileMenu />
+        </div>
       </div>
     </header>
   );

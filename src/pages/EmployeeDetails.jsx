@@ -1,7 +1,25 @@
 import { useState } from "react";
+
 import { format } from "date-fns";
+
 import { useParams } from "react-router-dom";
+
 import toast from "react-hot-toast";
+
+import {
+  HiOutlineArrowLeft,
+  HiOutlineBriefcase,
+  HiOutlineBuildingStorefront,
+  HiOutlineCalendarDays,
+  HiOutlineCheckCircle,
+  HiOutlineEnvelope,
+  HiOutlineIdentification,
+  HiOutlinePhone,
+  HiOutlineShieldCheck,
+  HiOutlineUserCircle,
+  HiOutlineUserMinus,
+  HiOutlineUserPlus,
+} from "react-icons/hi2";
 
 import { useEmployee } from "../features/staff/hooks/useEmployee";
 import { useRoles } from "../features/staff/hooks/useRoles";
@@ -14,6 +32,73 @@ import Button from "../ui/Button";
 import Select from "../ui/Select";
 import ErrorMessage from "../ui/ErrorMessage";
 import Spinner from "../ui/Spinner";
+
+function formatRole(roleName) {
+  if (!roleName) {
+    return "Unknown role";
+  }
+
+  return roleName
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getInitials(name) {
+  if (!name) {
+    return "?";
+  }
+
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
+}
+
+function InfoItem({ icon: Icon, label, value, muted = false }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+          {label}
+        </p>
+
+        <p
+          className={`mt-1 truncate text-sm font-medium ${
+            muted ? "text-gray-400" : "text-gray-900"
+          }`}
+        >
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ icon: Icon, title, description }) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-600">
+        <Icon className="h-5 w-5" />
+      </div>
+
+      <div>
+        <h2 className="text-base font-semibold tracking-tight text-gray-950">
+          {title}
+        </h2>
+
+        <p className="mt-0.5 text-sm text-gray-500">{description}</p>
+      </div>
+    </div>
+  );
+}
 
 function EmployeeDetails() {
   const { employeeId } = useParams();
@@ -107,8 +192,14 @@ function EmployeeDetails() {
   const roleOptions =
     roles?.map((role) => ({
       value: role.id,
-      label: role.name,
+      label: formatRole(role.name),
     })) ?? [];
+
+  const isActive = employee.status === "active";
+
+  const roleLabel = formatRole(employee.role_name || employee.roles?.name);
+
+  const initials = getInitials(employee.full_name);
 
   function handleRoleChange() {
     if (!selectedRole || selectedRole === currentRoleId) {
@@ -129,7 +220,7 @@ function EmployeeDetails() {
   }
 
   function handleStatusChange() {
-    const nextStatus = employee.status === "active" ? "inactive" : "active";
+    const nextStatus = isActive ? "inactive" : "active";
 
     if (
       nextStatus === "inactive" &&
@@ -158,152 +249,260 @@ function EmployeeDetails() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
+      {/* Back navigation */}
       <BackButton to="/staff" label="Back to Staff" />
 
-      <div className="mt-5">
-        <h1 className="text-2xl font-semibold text-gray-900">
-          {employee.full_name}
-        </h1>
+      {/* Employee hero */}
+      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
+        {/* Top accent */}
+        <div className="h-1 bg-gray-950" />
 
-        <p className="mt-1 text-sm text-gray-500">Employee details</p>
-      </div>
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            {/* Identity */}
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="relative">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gray-950 text-xl font-semibold tracking-tight text-white shadow-sm">
+                  {initials}
+                </div>
 
-      {/* Info */}
+                <span
+                  className={`absolute right-1 bottom-1 h-3.5 w-3.5 rounded-full border-[3px] border-white ${
+                    isActive ? "bg-emerald-500" : "bg-gray-400"
+                  } `}
+                />
+              </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <p className="text-sm text-gray-500">Email</p>
-          <p className="mt-1 font-medium text-gray-900">
-            {employee.email || "—"}
-          </p>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-950">
+                    {employee.full_name}
+                  </h1>
+
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                      isActive
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-gray-100 text-gray-500"
+                    } `}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        isActive ? "bg-emerald-500" : "bg-gray-400"
+                      } `}
+                    />
+
+                    {isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+
+                <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
+                  <HiOutlineBriefcase className="h-4 w-4 shrink-0" />
+
+                  {roleLabel}
+                </p>
+
+                <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-gray-400">
+                  <HiOutlineEnvelope className="h-4 w-4 shrink-0" />
+
+                  {employee.email || "No email available"}
+                </p>
+              </div>
+            </div>
+
+            {/* Role badge */}
+            <div className="hidden rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 sm:block">
+              <p className="text-[10px] font-bold tracking-[0.14em] text-gray-400 uppercase">
+                Current role
+              </p>
+
+              <p className="mt-1 text-sm font-semibold text-gray-950">
+                {roleLabel}
+              </p>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <div>
-          <p className="text-sm text-gray-500">Phone</p>
-          <p className="mt-1 font-medium text-gray-900">
-            {employee.phone || "—"}
-          </p>
+      {/* Employee information */}
+      <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm sm:p-8">
+        <SectionHeader
+          icon={HiOutlineUserCircle}
+          title="Employee information"
+          description="Basic information associated with this employee."
+        />
+
+        <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <InfoItem
+            icon={HiOutlinePhone}
+            label="Phone"
+            value={employee.phone || "Not provided"}
+            muted={!employee.phone}
+          />
+
+          <InfoItem
+            icon={HiOutlineBuildingStorefront}
+            label="Restaurant"
+            value={employee.restaurant_name || "Unknown"}
+          />
+
+          <InfoItem
+            icon={HiOutlineIdentification}
+            label="Employee ID"
+            value={employee.id}
+          />
+
+          <InfoItem
+            icon={HiOutlineCalendarDays}
+            label="Created"
+            value={format(new Date(employee.created_at), "dd/MM/yyyy, HH:mm")}
+          />
         </div>
+      </section>
 
-        <div>
-          <p className="text-sm text-gray-500">Role</p>
-          <p className="mt-1 font-medium text-gray-900 capitalize">
-            {employee.role_name || "Unknown"}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm text-gray-500">Restaurant</p>
-          <p className="mt-1 font-medium text-gray-900">
-            {employee.restaurant_name || "Unknown"}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-sm text-gray-500">Status</p>
-
-          <span
-            className={`mt-1 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
-              employee.status === "active"
-                ? "bg-green-100 text-green-700"
-                : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            <span
-              className={`mr-1.5 h-1.5 w-1.5 rounded-full ${
-                employee.status === "active" ? "bg-green-500" : "bg-gray-400"
-              }`}
-            />
-
-            {employee.status}
-          </span>
-        </div>
-
-        <div>
-          <p className="text-sm text-gray-500">Employee ID</p>
-          <p className="mt-1 font-medium text-gray-900">{employee.id}</p>
-        </div>
-
-        <div>
-          <p className="text-sm text-gray-500">Created</p>
-          <p className="mt-1 font-medium text-gray-900">
-            {format(new Date(employee.created_at), "dd/MM/yyyy, HH:mm")}
-          </p>
-        </div>
-      </div>
-
+      {/* Role management */}
       {canChangeRole && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Change role</h2>
+        <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm sm:p-8">
+          <SectionHeader
+            icon={HiOutlineShieldCheck}
+            title="Role & permissions"
+            description="Change the employee's role and access level."
+          />
 
-            <p className="mt-1 text-sm text-gray-500">
-              Update this employee's role.
-            </p>
+          <div className="mt-7 rounded-2xl border border-gray-200 bg-gray-50/70 p-5">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="w-full max-w-md">
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Employee role
+                </label>
+
+                <Select
+                  value={selectedRole}
+                  onChange={setSelectedRoleId}
+                  options={roleOptions}
+                />
+
+                <p className="mt-2 text-xs text-gray-400">
+                  The selected role determines the employee's default
+                  permissions.
+                </p>
+              </div>
+
+              <Button
+                onClick={handleRoleChange}
+                disabled={
+                  isChangingRole ||
+                  !selectedRole ||
+                  selectedRole === currentRoleId
+                }
+              >
+                {isChangingRole ? "Updating..." : "Update role"}
+              </Button>
+            </div>
+
+            {changeRoleError && (
+              <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600">
+                  <span className="text-sm font-bold">!</span>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-red-800">
+                    Unable to update role
+                  </p>
+
+                  <p className="mt-0.5 text-sm text-red-600">
+                    {changeRoleError.message}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-
-          <div className="mt-5 max-w-sm">
-            <Select
-              value={selectedRole}
-              onChange={setSelectedRoleId}
-              options={roleOptions}
-            />
-          </div>
-
-          {changeRoleError && (
-            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-              {changeRoleError.message}
-            </p>
-          )}
-
-          <div className="mt-5 flex justify-end">
-            <Button
-              onClick={handleRoleChange}
-              disabled={
-                isChangingRole ||
-                !selectedRole ||
-                selectedRole === currentRoleId
-              }
-            >
-              {isChangingRole ? "Updating..." : "Update Role"}
-            </Button>
-          </div>
-        </div>
+        </section>
       )}
 
+      {/* Status management */}
       {canChangeStatus && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Employee status
-            </h2>
+        <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm sm:p-8">
+          <SectionHeader
+            icon={isActive ? HiOutlineUserMinus : HiOutlineUserPlus}
+            title="Employee status"
+            description="Control whether this employee can actively use the restaurant system."
+          />
 
-            <p className="mt-1 text-sm text-gray-500">
-              Activate or deactivate this employee.
-            </p>
-          </div>
+          <div className="mt-7 flex flex-col gap-5 rounded-2xl border border-gray-200 bg-gray-50/70 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                  isActive
+                    ? "bg-emerald-100 text-emerald-600"
+                    : "bg-gray-200 text-gray-500"
+                } `}
+              >
+                {isActive ? (
+                  <HiOutlineCheckCircle className="h-5 w-5" />
+                ) : (
+                  <HiOutlineUserMinus className="h-5 w-5" />
+                )}
+              </div>
 
-          {updateStatusError && (
-            <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-              {updateStatusError.message}
-            </p>
-          )}
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-semibold text-gray-950">
+                    Account is {isActive ? "active" : "inactive"}
+                  </p>
 
-          <div className="mt-5 flex justify-end">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      isActive
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-gray-200 text-gray-600"
+                    } `}
+                  >
+                    {isActive ? "ACTIVE" : "INACTIVE"}
+                  </span>
+                </div>
+
+                <p className="mt-1 max-w-xl text-xs leading-5 text-gray-500">
+                  {isActive
+                    ? "This employee is currently active and can access RestaurantOS according to their permissions."
+                    : "This employee is currently inactive and should not be able to use the restaurant system."}
+                </p>
+              </div>
+            </div>
+
             <Button
               onClick={handleStatusChange}
               disabled={isUpdatingStatus}
-              variation={employee.status === "active" ? "danger" : "primary"}
+              variation={isActive ? "danger" : "primary"}
             >
               {isUpdatingStatus
                 ? "Updating..."
-                : employee.status === "active"
-                  ? "Deactivate Employee"
-                  : "Activate Employee"}
+                : isActive
+                  ? "Deactivate"
+                  : "Activate"}
             </Button>
           </div>
-        </div>
+
+          {updateStatusError && (
+            <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600">
+                <span className="text-sm font-bold">!</span>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-red-800">
+                  Unable to update status
+                </p>
+
+                <p className="mt-0.5 text-sm text-red-600">
+                  {updateStatusError.message}
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
       )}
     </div>
   );
