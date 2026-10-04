@@ -31,7 +31,7 @@ import Customers from "./pages/Customers";
 import Menu from "./pages/Menu";
 import DailyMenu from "./pages/DailyMenu";
 import Orders from "./pages/Orders";
-
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -50,6 +50,9 @@ function App() {
             <Route path="/restaurant-day" element={<RestaurantDay />} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/staff/:employeeId" element={<EmployeeDetails />} />
+
+            {/* Profile */}
+            <Route path="/profile" element={<Profile />} />
 
             {/* Reservations */}
             <Route path="/reservations" element={<Reservations />} />
