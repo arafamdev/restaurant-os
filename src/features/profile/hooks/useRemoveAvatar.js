@@ -1,13 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-import { updateProfile } from "../services/profileService";
+import { removeProfileAvatar } from "../services/profileService";
 
-export function useUpdateProfile() {
+export function useRemoveAvatar() {
   const queryClient = useQueryClient();
 
-  const { mutate: updateProfileData, isPending } = useMutation({
-    mutationFn: updateProfile,
+  const {
+    mutate: removeAvatar,
+    isPending,
+    error,
+  } = useMutation({
+    mutationFn: removeProfileAvatar,
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -18,7 +22,11 @@ export function useUpdateProfile() {
         queryKey: ["current-user-context"],
       });
 
-      toast.success("Personal information updated successfully.");
+      queryClient.invalidateQueries({
+        queryKey: ["avatar-url"],
+      });
+
+      toast.success("Avatar removed successfully!");
     },
 
     onError: (error) => {
@@ -27,7 +35,8 @@ export function useUpdateProfile() {
   });
 
   return {
-    updateProfile: updateProfileData,
+    removeAvatar,
     isPending,
+    error,
   };
 }

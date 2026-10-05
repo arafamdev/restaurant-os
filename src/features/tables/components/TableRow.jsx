@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useDeleteTable } from "../hooks/useDeleteTable";
 
 import Button from "../../../ui/Button";
-import Modal from "../../../ui/Modal";
+import ConfirmModal from "../../../ui/ConfirmModal";
 
 function TableRow({ table }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -43,7 +43,7 @@ function TableRow({ table }) {
           {table.capacity} {table.capacity === 1 ? "guest" : "guests"}
         </div>
 
-        <div className="text-sm capitalize text-gray-600">{table.location}</div>
+        <div className="text-sm text-gray-600 capitalize">{table.location}</div>
 
         <div>
           <span
@@ -74,34 +74,16 @@ function TableRow({ table }) {
         </div>
       </li>
 
-      {isDeleteModalOpen && (
-        <Modal onClose={() => setIsDeleteModalOpen(false)}>
-          <h2 className="text-lg font-semibold text-gray-900">Delete table?</h2>
-
-          <p className="mt-2 text-sm text-gray-500">
-            Are you sure you want to delete Table {table.table_number}? This
-            action cannot be undone.
-          </p>
-
-          <div className="mt-6 flex justify-end gap-3">
-            <Button
-              variation="secondary"
-              onClick={() => setIsDeleteModalOpen(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              variation="danger"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete table"}
-            </Button>
-          </div>
-        </Modal>
-      )}
+      <ConfirmModal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete table?"
+        description={`Are you sure you want to delete Table ${table.table_number}? This action cannot be undone.`}
+        confirmText="Delete table"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+      />
     </>
   );
 }

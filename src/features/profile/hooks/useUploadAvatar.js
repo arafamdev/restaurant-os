@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 import { uploadAvatar, updateProfile } from "../services/profileService";
 
@@ -40,12 +41,18 @@ export function useUploadAvatar() {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ["currentUserContext"],
+        queryKey: ["current-user-context"],
       });
 
       queryClient.invalidateQueries({
         queryKey: ["avatar-url"],
       });
+
+      toast.success("Avatar uploaded successfully!");
+    },
+
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

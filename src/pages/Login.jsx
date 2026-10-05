@@ -4,8 +4,12 @@ import { supabase } from "../services/supabase";
 
 function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("teste@teste.com");
-  const [password, setPassword] = useState("teste0000");
+  const [email, setEmail] = useState(
+    import.meta.env.VITE_ADMIN_LOGIN_EMAIL || "",
+  );
+  const [password, setPassword] = useState(
+    import.meta.env.VITE_ADMIN_LOGIN_PASSWORD || "",
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
