@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useReservations } from "../features/reservations/hooks/useReservations";
 import useReservationFilters from "../features/reservations/hooks/useReservationFilters";
@@ -9,19 +10,23 @@ import ReservationStats from "../features/reservations/components/ReservationSta
 
 import { getReservationStats } from "../features/reservations/utils/reservationUtils";
 
+import useViewMode from "../hooks/useViewMode";
+
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import EmptyState from "../ui/EmptyState";
-import { useNavigate } from "react-router-dom";
+import ViewSwitcher from "../ui/ViewSwitcher";
 
 function Reservations() {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState();
 
-  const { isLoading, reservations, error } = useReservations();
+  const [view, setView] = useViewMode("reservations");
 
-  const navigate = useNavigate();
+  const { isLoading, reservations, error } = useReservations();
 
   const { filteredReservations, emptyState } = useReservationFilters({
     reservations: reservations ?? [],
@@ -30,19 +35,22 @@ function Reservations() {
     selectedDate,
   });
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   if (error) {
     return <ErrorMessage message="Could not load reservations." />;
   }
 
-  const { totalReservations, reservationsByStatus } =
-    getReservationStats(reservations);
+  const { totalReservations, reservationsByStatus } = getReservationStats(
+    reservations ?? [],
+  );
 
   return (
     <div className="space-y-6 p-6">
-      {/* Page header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      {/* PAGE HEADER */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
             Reservations
@@ -62,13 +70,13 @@ function Reservations() {
         </button>
       </div>
 
-      {/* Reservation statistics */}
+      {/* STATS */}
       <ReservationStats
         totalReservations={totalReservations}
         reservationsByStatus={reservationsByStatus}
       />
 
-      {/* Filters */}
+      {/* FILTERS */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <ReservationFilters
           search={search}
@@ -80,8 +88,8 @@ function Reservations() {
         />
       </div>
 
-      {/* Results header */}
-      <div className="flex items-center justify-between">
+      {/* RESULTS HEADER */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Reservations</h2>
 
@@ -91,11 +99,13 @@ function Reservations() {
             shown
           </p>
         </div>
+
+        <ViewSwitcher value={view} onChange={setView} />
       </div>
 
-      {/* Reservations */}
+      {/* RESERVATIONS */}
       {filteredReservations.length > 0 ? (
-        <ReservationList reservations={filteredReservations} />
+        <ReservationList reservations={filteredReservations} view={view} />
       ) : (
         <EmptyState {...emptyState} />
       )}
