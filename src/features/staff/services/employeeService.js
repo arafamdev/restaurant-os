@@ -2,8 +2,6 @@ import { supabase } from "../../../services/supabase";
 
 // GET ALL EMPLOYEES
 export async function getEmployees() {
-  console.log("=== GET EMPLOYEES ===");
-
   const { data, error } = await supabase
     .from("employees")
     .select(
@@ -19,9 +17,6 @@ export async function getEmployees() {
     `,
     )
     .order("full_name");
-
-  console.log("EMPLOYEES DATA:", data);
-  console.log("EMPLOYEES ERROR:", error);
 
   if (error) {
     throw new Error(error.message);

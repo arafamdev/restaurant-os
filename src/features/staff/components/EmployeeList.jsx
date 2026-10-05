@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react";
-
 import {
   HiOutlineMagnifyingGlass,
-  HiOutlineUserGroup,
   HiOutlineUserCircle,
+  HiOutlineUserGroup,
   HiOutlineUserMinus,
 } from "react-icons/hi2";
 
-import EmployeeRow from "./EmployeeRow";
+import EmployeeCard from "./EmployeeCard";
+import ViewSwitcher from "../../../ui/ViewSwitcher";
 
-function EmployeeList({ employees }) {
+function EmployeeList({ employees, view = "compact", onViewChange }) {
   const [search, setSearch] = useState("");
 
   const stats = useMemo(() => {
@@ -28,7 +28,9 @@ function EmployeeList({ employees }) {
   }, [employees]);
 
   const filteredEmployees = useMemo(() => {
-    if (!employees) return [];
+    if (!employees) {
+      return [];
+    }
 
     const searchTerm = search.trim().toLowerCase();
 
@@ -38,7 +40,9 @@ function EmployeeList({ employees }) {
 
     return employees.filter((employee) => {
       const name = employee.full_name?.toLowerCase() ?? "";
+
       const phone = employee.phone?.toLowerCase() ?? "";
+
       const role = employee.roles?.name?.toLowerCase() ?? "";
 
       return (
@@ -49,12 +53,17 @@ function EmployeeList({ employees }) {
     });
   }, [employees, search]);
 
+  const gridClass =
+    view === "large"
+      ? "grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+      : "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6";
+
   return (
     <div className="space-y-5">
-      {/* Statistics */}
+      {/* STATISTICS */}
       <div className="grid gap-3 sm:grid-cols-3">
-        {/* Total */}
-        <div className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-sm">
+        {/* TOTAL */}
+        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500">
               <HiOutlineUserGroup className="h-4.5 w-4.5" />
@@ -70,8 +79,8 @@ function EmployeeList({ employees }) {
           </div>
         </div>
 
-        {/* Active */}
-        <div className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-sm">
+        {/* ACTIVE */}
+        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <HiOutlineUserCircle className="h-4.5 w-4.5" />
@@ -87,8 +96,8 @@ function EmployeeList({ employees }) {
           </div>
         </div>
 
-        {/* Inactive */}
-        <div className="flex items-center justify-between rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-sm">
+        {/* INACTIVE */}
+        <div className="rounded-xl border border-gray-200/80 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500">
               <HiOutlineUserMinus className="h-4.5 w-4.5" />
@@ -105,9 +114,10 @@ function EmployeeList({ employees }) {
         </div>
       </div>
 
-      {/* Search + List */}
+      {/* EMPLOYEE SECTION */}
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-gray-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* TOOLBAR */}
+        <div className="flex flex-col gap-4 border-b border-gray-100 p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-base font-semibold tracking-tight text-gray-950">
               Employees
@@ -120,19 +130,26 @@ function EmployeeList({ employees }) {
             </p>
           </div>
 
-          <div className="relative w-full sm:max-w-xs">
-            <HiOutlineMagnifyingGlass className="pointer-events-none absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-gray-400" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {/* SEARCH */}
+            <div className="relative w-full sm:w-64">
+              <HiOutlineMagnifyingGlass className="pointer-events-none absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-gray-400" />
 
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search employees..."
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pr-4 pl-10 text-sm text-gray-900 transition-all outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-gray-950/5"
-            />
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search employees..."
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pr-4 pl-10 text-sm text-gray-900 transition-all outline-none placeholder:text-gray-400 focus:border-gray-400 focus:bg-white focus:ring-2 focus:ring-gray-950/5"
+              />
+            </div>
+
+            {/* VIEW SWITCHER */}
+            <ViewSwitcher value={view} onChange={onViewChange} />
           </div>
         </div>
 
+        {/* EMPTY STATE */}
         {filteredEmployees.length === 0 ? (
           <div className="px-6 py-14 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-gray-400">
@@ -150,41 +167,66 @@ function EmployeeList({ employees }) {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-sm">
-              <thead className="border-b border-gray-200 bg-gray-50/80">
-                <tr>
-                  <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
-                    Employee
-                  </th>
+          <>
+            {/* LIST VIEW */}
+            {view === "list" && (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left text-sm">
+                  <thead className="border-b border-gray-200 bg-gray-50/80">
+                    <tr>
+                      <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
+                        Employee
+                      </th>
 
-                  <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
-                    Phone
-                  </th>
+                      <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
+                        Phone
+                      </th>
 
-                  <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
-                    Role
-                  </th>
+                      <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
+                        Role
+                      </th>
 
-                  <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
-                    Status
-                  </th>
+                      <th className="px-6 py-4 text-[11px] font-semibold tracking-[0.08em] text-gray-400 uppercase">
+                        Status
+                      </th>
 
-                  <th className="w-12 px-6 py-4">
-                    <span className="sr-only">Open employee</span>
-                  </th>
-                </tr>
-              </thead>
+                      <th className="w-12 px-6 py-4">
+                        <span className="sr-only">Open employee</span>
+                      </th>
+                    </tr>
+                  </thead>
 
-              <tbody className="divide-y divide-gray-100">
-                {filteredEmployees.map((employee) => (
-                  <EmployeeRow key={employee.id} employee={employee} />
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredEmployees.map((employee) => (
+                      <EmployeeCard
+                        key={employee.id}
+                        employee={employee}
+                        view="list"
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* COMPACT / LARGE VIEW */}
+            {view !== "list" && (
+              <div className="p-5">
+                <div className={gridClass}>
+                  {filteredEmployees.map((employee) => (
+                    <EmployeeCard
+                      key={employee.id}
+                      employee={employee}
+                      view={view}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
+        {/* FOOTER */}
         {filteredEmployees.length > 0 && (
           <div className="border-t border-gray-100 bg-gray-50/50 px-6 py-3">
             <p className="text-xs text-gray-400">

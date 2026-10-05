@@ -56,7 +56,6 @@ function ReservationForm() {
     const startsAt = createReservationDateTime(data.date, data.time);
 
     if (startsAt <= new Date()) {
-      console.log("Reservation date and time must be in the future.");
       return;
     }
 

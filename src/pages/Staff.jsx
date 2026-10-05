@@ -3,6 +3,9 @@ import { useState } from "react";
 import EmployeeList from "../features/staff/components/EmployeeList";
 import CreateEmployeeForm from "../features/staff/components/CreateEmployeeForm";
 
+import ViewSwitcher from "../ui/ViewSwitcher";
+import useViewMode from "../hooks/useViewMode";
+
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
@@ -13,6 +16,8 @@ import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserCont
 
 function Staff() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const [view, setView] = useViewMode("staff");
 
   const {
     employees,
@@ -55,8 +60,13 @@ function Staff() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* PAGE HEADER */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-950">
+            Staff
+          </h1>
+
           <p className="mt-1 text-sm text-gray-500">
             Manage restaurant employees and their roles.
           </p>
@@ -69,8 +79,10 @@ function Staff() {
         )}
       </div>
 
-      <EmployeeList employees={employees} />
+      {/* STAFF */}
+      <EmployeeList employees={employees} view={view} onViewChange={setView} />
 
+      {/* CREATE EMPLOYEE MODAL */}
       {isCreateModalOpen && (
         <Modal onClose={() => setIsCreateModalOpen(false)}>
           <CreateEmployeeForm
