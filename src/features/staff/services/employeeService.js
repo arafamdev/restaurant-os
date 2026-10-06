@@ -38,11 +38,11 @@ export async function getEmployeeById(employeeId) {
   return data;
 }
 
-// CHANGE EMPLOYEE ROLES (ONLY MANAGER)
+// CHANGE EMPLOYEE ROLE
 export async function changeEmployeeRole(employeeId, roleId) {
   const { data, error } = await supabase.rpc("change_employee_role", {
-    p_employee_id: employeeId,
-    p_role_id: roleId,
+    p_employee_id: Number(employeeId),
+    p_role_id: Number(roleId),
   });
 
   if (error) {
@@ -124,7 +124,7 @@ export async function getRestaurants() {
 // UPDATE EMPLOYEE STATUS
 export async function updateEmployeeStatus(employeeId, status) {
   const { data, error } = await supabase.rpc("update_employee_status", {
-    p_employee_id: employeeId,
+    p_employee_id: Number(employeeId),
     p_status: status,
   });
 

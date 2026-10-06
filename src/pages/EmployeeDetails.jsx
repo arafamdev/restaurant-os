@@ -1,9 +1,7 @@
 import { useState } from "react";
 
 import { format } from "date-fns";
-
 import { useParams } from "react-router-dom";
-
 import toast from "react-hot-toast";
 
 import {
@@ -104,6 +102,7 @@ function EmployeeDetails() {
   const { employeeId } = useParams();
 
   const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   const {
     employee,
@@ -185,7 +184,7 @@ function EmployeeDetails() {
     (userContext?.role_name === "manager" &&
       userContext?.restaurant_id === employee.restaurant_id);
 
-  const currentRoleId = employee.roles?.id;
+  const currentRoleId = employee.role_id || employee.roles?.id;
 
   const selectedRole = selectedRoleId || currentRoleId || "";
 
@@ -202,7 +201,7 @@ function EmployeeDetails() {
   const initials = getInitials(employee.full_name);
 
   function handleRoleChange() {
-    if (!selectedRole || selectedRole === currentRoleId) {
+    if (!selectedRole || Number(selectedRole) === Number(currentRoleId)) {
       return;
     }
 
@@ -220,29 +219,34 @@ function EmployeeDetails() {
   }
 
   function handleStatusChange() {
-    const nextStatus = isActive ? "inactive" : "active";
-
-    if (
-      nextStatus === "inactive" &&
-      !window.confirm(
-        `Are you sure you want to deactivate ${employee.full_name}?`,
-      )
-    ) {
+    if (isActive) {
+      setShowStatusModal(true);
       return;
     }
 
     updateStatus(
       {
         employeeId: employee.id,
-        status: nextStatus,
+        status: "active",
       },
       {
         onSuccess: () => {
-          toast.success(
-            nextStatus === "active"
-              ? "Employee activated successfully."
-              : "Employee deactivated successfully.",
-          );
+          toast.success("Employee activated successfully.");
+        },
+      },
+    );
+  }
+
+  function handleConfirmDeactivate() {
+    updateStatus(
+      {
+        employeeId: employee.id,
+        status: "inactive",
+      },
+      {
+        onSuccess: () => {
+          setShowStatusModal(false);
+          toast.success("Employee deactivated successfully.");
         },
       },
     );
@@ -250,12 +254,10 @@ function EmployeeDetails() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {/* Back navigation */}
       <BackButton to="/staff" label="Back to Staff" />
 
       {/* Employee hero */}
       <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
-        {/* Top accent */}
         <div className="h-1 bg-gray-950" />
 
         <div className="p-6 sm:p-8">
@@ -270,7 +272,7 @@ function EmployeeDetails() {
                 <span
                   className={`absolute right-1 bottom-1 h-3.5 w-3.5 rounded-full border-[3px] border-white ${
                     isActive ? "bg-emerald-500" : "bg-gray-400"
-                  } `}
+                  }`}
                 />
               </div>
 
@@ -285,12 +287,12 @@ function EmployeeDetails() {
                       isActive
                         ? "bg-emerald-50 text-emerald-700"
                         : "bg-gray-100 text-gray-500"
-                    } `}
+                    }`}
                   >
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
                         isActive ? "bg-emerald-500" : "bg-gray-400"
-                      } `}
+                      }`}
                     />
 
                     {isActive ? "Active" : "Inactive"}
@@ -299,13 +301,11 @@ function EmployeeDetails() {
 
                 <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
                   <HiOutlineBriefcase className="h-4 w-4 shrink-0" />
-
                   {roleLabel}
                 </p>
 
                 <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-gray-400">
                   <HiOutlineEnvelope className="h-4 w-4 shrink-0" />
-
                   {employee.email || "No email available"}
                 </p>
               </div>
@@ -394,7 +394,7 @@ function EmployeeDetails() {
                 disabled={
                   isChangingRole ||
                   !selectedRole ||
-                  selectedRole === currentRoleId
+                  Number(selectedRole) === Number(currentRoleId)
                 }
               >
                 {isChangingRole ? "Updating..." : "Update role"}
@@ -438,7 +438,7 @@ function EmployeeDetails() {
                   isActive
                     ? "bg-emerald-100 text-emerald-600"
                     : "bg-gray-200 text-gray-500"
-                } `}
+                }`}
               >
                 {isActive ? (
                   <HiOutlineCheckCircle className="h-5 w-5" />
@@ -458,7 +458,7 @@ function EmployeeDetails() {
                       isActive
                         ? "bg-emerald-100 text-emerald-700"
                         : "bg-gray-200 text-gray-600"
-                    } `}
+                    }`}
                   >
                     {isActive ? "ACTIVE" : "INACTIVE"}
                   </span>
@@ -503,6 +503,59 @@ function EmployeeDetails() {
             </div>
           )}
         </section>
+      )}
+
+      {/* Deactivate confirmation modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="deactivate-employee-title"
+            className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                <HiOutlineUserMinus className="h-5 w-5" />
+              </div>
+
+              <div className="min-w-0">
+                <h2
+                  id="deactivate-employee-title"
+                  className="text-base font-semibold text-gray-950"
+                >
+                  Deactivate employee
+                </h2>
+
+                <p className="mt-1 text-sm leading-6 text-gray-500">
+                  Are you sure you want to deactivate{" "}
+                  <span className="font-semibold text-gray-700">
+                    {employee.full_name}
+                  </span>
+                  ?
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variation="secondary"
+                onClick={() => setShowStatusModal(false)}
+                disabled={isUpdatingStatus}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variation="danger"
+                onClick={handleConfirmDeactivate}
+                disabled={isUpdatingStatus}
+              >
+                {isUpdatingStatus ? "Deactivating..." : "Deactivate"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

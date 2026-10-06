@@ -11,9 +11,11 @@ export function useUpdateEmployeeStatus() {
     error,
   } = useMutation({
     mutationFn: ({ employeeId, status }) =>
-      updateEmployeeStatus(employeeId, status),
+      updateEmployeeStatus(Number(employeeId), status),
 
     onSuccess: (_, variables) => {
+      const employeeId = Number(variables.employeeId);
+
       // Atualizar a lista de funcionários
       queryClient.invalidateQueries({
         queryKey: ["employees"],
@@ -21,7 +23,7 @@ export function useUpdateEmployeeStatus() {
 
       // Atualizar os detalhes do funcionário
       queryClient.invalidateQueries({
-        queryKey: ["employee", variables.employeeId],
+        queryKey: ["employee", employeeId],
       });
     },
   });

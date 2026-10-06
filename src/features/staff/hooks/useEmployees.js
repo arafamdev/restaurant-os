@@ -4,8 +4,8 @@ import { getEmployees } from "../services/employeeService";
 
 export function useEmployees() {
   const {
-    isLoading,
     data: employees,
+    isLoading,
     error,
   } = useQuery({
     queryKey: ["employees"],
@@ -13,8 +13,8 @@ export function useEmployees() {
   });
 
   return {
-    isLoading,
     employees,
+    isLoading,
     error,
   };
 }

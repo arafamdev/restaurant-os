@@ -3,19 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { getEmployeeById } from "../services/employeeService";
 
 export function useEmployee(employeeId) {
+  const normalizedEmployeeId = Number(employeeId);
+
   const {
-    isLoading,
     data: employee,
+    isLoading,
     error,
   } = useQuery({
-    queryKey: ["employee", employeeId],
-    queryFn: () => getEmployeeById(employeeId),
-    enabled: Boolean(employeeId),
+    queryKey: ["employee", normalizedEmployeeId],
+    queryFn: () => getEmployeeById(normalizedEmployeeId),
+    enabled: Number.isFinite(normalizedEmployeeId),
   });
 
   return {
-    isLoading,
     employee,
+    isLoading,
     error,
   };
 }
