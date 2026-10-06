@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import BackButton from "../ui/BackButton";
 
 function PageNotFound() {
   return (
@@ -11,9 +12,11 @@ function PageNotFound() {
         Page not found
       </h1>
 
-      <p className="mt-3 max-w-md text-sm text-gray-500">
+      <p className="mt-3 mb-5 max-w-md text-sm text-gray-500">
         The page you are looking for does not exist or may have been moved.
       </p>
+
+      <BackButton />
 
       <Link
         to="/dashboard"
