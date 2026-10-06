@@ -2,12 +2,16 @@ import { useState } from "react";
 
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
+import Spinner from "../ui/Spinner";
+import ErrorMessage from "../ui/ErrorMessage";
+import ViewSwitcher from "../ui/ViewSwitcher";
+import useViewMode from "../hooks/useViewMode";
 
 import DailyMenuForm from "../features/dailyMenu/components/DailyMenuForm";
 import DailyMenuList from "../features/dailyMenu/components/DailyMenuList";
 import DailyMenuStatusModal from "../features/dailyMenu/components/DailyMenuStatusModal";
-import { useDeleteDailyMenu } from "../features/dailyMenu/hooks/useDeleteDailyMenu";
 
+import { useDeleteDailyMenu } from "../features/dailyMenu/hooks/useDeleteDailyMenu";
 import { useDailyMenus } from "../features/dailyMenu/hooks/useDailyMenus";
 import { useToggleDailyMenu } from "../features/dailyMenu/hooks/useToggleDailyMenu";
 
@@ -16,6 +20,8 @@ function DailyMenu() {
   const [editingDailyMenu, setEditingDailyMenu] = useState(null);
   const [dailyMenuToToggle, setDailyMenuToToggle] = useState(null);
   const [deletingDailyMenu, setDeletingDailyMenu] = useState(null);
+
+  const [view, setView] = useViewMode("daily-menu");
 
   const { dailyMenus, isLoading, error } = useDailyMenus();
 
@@ -48,40 +54,45 @@ function DailyMenu() {
   }
 
   if (isLoading) {
-    return <p>Loading daily menus...</p>;
+    return <Spinner />;
   }
 
   if (error) {
-    return <p className="text-red-600">{error.message}</p>;
+    return <ErrorMessage message={error.message} />;
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Daily Menu</h1>
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Daily Menu</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Manage your daily menu offers.
+            </p>
+          </div>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Manage your daily menu offers.
-          </p>
+          <Button onClick={() => setIsCreating(true)}>Create daily menu</Button>
         </div>
 
-        <Button onClick={() => setIsCreating(true)}>Create daily menu</Button>
+        {/* View controls */}
+        <div className="flex justify-end">
+          <ViewSwitcher value={view} onChange={setView} />
+        </div>
+
+        {/* Daily menus */}
+        <DailyMenuList
+          dailyMenus={dailyMenus}
+          view={view}
+          onEdit={(dailyMenu) => setEditingDailyMenu(dailyMenu)}
+          onToggleActive={handleToggleActive}
+          onDelete={handleDeleteDailyMenu}
+        />
       </div>
 
-      {/* Daily menus */}
-
-      <DailyMenuList
-        dailyMenus={dailyMenus}
-        onEdit={(dailyMenu) => setEditingDailyMenu(dailyMenu)}
-        onToggleActive={handleToggleActive}
-        onDelete={handleDeleteDailyMenu}
-      />
-
       {/* Create modal */}
-
       {isCreating && (
         <Modal onClose={() => setIsCreating(false)}>
           <div className="mb-6">
@@ -99,7 +110,6 @@ function DailyMenu() {
       )}
 
       {/* Edit modal */}
-
       {editingDailyMenu && (
         <Modal onClose={() => setEditingDailyMenu(null)}>
           <div className="mb-6">
@@ -120,7 +130,6 @@ function DailyMenu() {
       )}
 
       {/* Delete modal */}
-
       {deletingDailyMenu && (
         <Modal
           onClose={() => {
@@ -173,7 +182,6 @@ function DailyMenu() {
       )}
 
       {/* Activate / deactivate confirmation */}
-
       {dailyMenuToToggle && (
         <DailyMenuStatusModal
           dailyMenu={dailyMenuToToggle}
@@ -182,7 +190,7 @@ function DailyMenu() {
           isProcessing={isToggling}
         />
       )}
-    </div>
+    </>
   );
 }
 

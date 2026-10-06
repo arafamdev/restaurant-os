@@ -1,6 +1,6 @@
-import DailyMenuRow from "./DailyMenuRow";
+import DailyMenuCard from "./DailyMenuCard";
 
-function DailyMenuList({ dailyMenus, onEdit, onToggleActive, onDelete }) {
+function DailyMenuList({ dailyMenus, view, onEdit, onToggleActive, onDelete }) {
   if (dailyMenus.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
@@ -15,12 +15,21 @@ function DailyMenuList({ dailyMenus, onEdit, onToggleActive, onDelete }) {
     );
   }
 
+  const isListView = view === "list";
+
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div
+      className={
+        isListView
+          ? "overflow-hidden rounded-xl border border-gray-200 bg-white"
+          : "grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
+      }
+    >
       {dailyMenus.map((dailyMenu) => (
-        <DailyMenuRow
+        <DailyMenuCard
           key={dailyMenu.id}
           dailyMenu={dailyMenu}
+          view={view}
           onEdit={onEdit}
           onToggleActive={onToggleActive}
           onDelete={onDelete}
