@@ -4,25 +4,37 @@ import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
+import ViewSwitcher from "../ui/ViewSwitcher";
+
+import useViewMode from "../hooks/useViewMode";
 
 import { useMenuItems } from "../features/menu/hooks/useMenuItems";
+
 import { useMenuCategories } from "../features/menu/hooks/useMenuCategories";
+
 import { useUpdateMenuItem } from "../features/menu/hooks/useUpdateMenuItem";
 
+import useMenuFilters from "../features/menu/hooks/useMenuFilters";
+
 import MenuFilters from "../features/menu/components/MenuFilters";
+import MenuGroupSwitcher from "../features/menu/components/MenuGroupSwitcher";
 import MenuList from "../features/menu/components/MenuList";
 import MenuItemForm from "../features/menu/components/MenuItemForm";
+import MenuStats from "../features/menu/components/MenuStats";
 
 function Menu() {
   const [group, setGroup] = useState("all");
   const [categoryId, setCategoryId] = useState("all");
   const [status, setStatus] = useState("all");
+  const [search, setSearch] = useState("");
+
+  const [view, setView] = useViewMode("menu");
 
   const [isCreating, setIsCreating] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
-  const [menuItemToToggle, setMenuItemToToggle] = useState(null);
 
-  const [search, setSearch] = useState("");
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+
+  const [menuItemToToggle, setMenuItemToToggle] = useState(null);
 
   const {
     isLoading: isLoadingItems,
@@ -38,31 +50,25 @@ function Menu() {
 
   const { updateItem, isUpdating } = useUpdateMenuItem();
 
+  const { filteredMenuItems } = useMenuFilters({
+    menuItems,
+    search,
+    group,
+    categoryId,
+    status,
+  });
+
   const isLoading = isLoadingItems || isLoadingCategories;
+
   const error = itemsError || categoriesError;
 
-  const filteredMenuItems = menuItems.filter((item) => {
-    const normalizedSearch = search.trim().toLowerCase();
+  function handleGroupChange(nextGroup) {
+    setGroup(nextGroup);
 
-    const matchesSearch =
-      normalizedSearch === "" ||
-      item.name.toLowerCase().includes(normalizedSearch) ||
-      item.description?.toLowerCase().includes(normalizedSearch);
-
-    const matchesGroup =
-      group === "all" || item.menu_categories?.group_type === group;
-
-    const matchesCategory =
-      categoryId === "all" || String(item.category_id) === categoryId;
-
-    const matchesStatus =
-      status === "all" ||
-      (status === "available" && item.is_active && item.is_available) ||
-      (status === "unavailable" && item.is_active && !item.is_available) ||
-      (status === "inactive" && !item.is_active);
-
-    return matchesSearch && matchesGroup && matchesCategory && matchesStatus;
-  });
+    // A categoria selecionada pode pertencer
+    // ao grupo anterior.
+    setCategoryId("all");
+  }
 
   function handleEdit(menuItem) {
     setSelectedMenuItem(menuItem);
@@ -106,9 +112,7 @@ function Menu() {
         {/* Page header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Menu</h1>
-
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-xl text-gray-500">
               Manage your restaurant menu.
             </p>
           </div>
@@ -116,7 +120,10 @@ function Menu() {
           <Button onClick={() => setIsCreating(true)}>Add menu item</Button>
         </div>
 
-        {/* Filters */}
+        {/* Menu statistics */}
+        <MenuStats menuItems={menuItems} />
+
+        {/* Search and filters */}
         <MenuFilters
           search={search}
           group={group}
@@ -124,15 +131,27 @@ function Menu() {
           status={status}
           categories={categories}
           onSearchChange={setSearch}
-          onGroupChange={setGroup}
           onCategoryChange={setCategoryId}
           onStatusChange={setStatus}
         />
+
+        {/* Group and view controls */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <MenuGroupSwitcher
+            categories={categories}
+            value={group}
+            onChange={handleGroupChange}
+          />
+
+          <ViewSwitcher value={view} onChange={setView} />
+        </div>
 
         {/* Menu list */}
         <MenuList
           menuItems={filteredMenuItems}
           categories={categories}
+          group={group}
+          view={view}
           onEdit={handleEdit}
           onToggleActive={handleToggleActive}
         />
@@ -179,7 +198,7 @@ function Menu() {
         </Modal>
       )}
 
-      {/* Deactivate / Reactivate confirmation modal */}
+      {/* Deactivate / Reactivate confirmation */}
       {menuItemToToggle && (
         <Modal
           onClose={() => {

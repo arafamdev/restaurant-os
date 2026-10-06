@@ -1,6 +1,12 @@
 import Input from "../../../ui/Input";
 import Select from "../../../ui/Select";
 
+function formatGroupLabel(group) {
+  return group
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 function MenuFilters({
   search,
   group,
@@ -8,19 +14,20 @@ function MenuFilters({
   status,
   categories,
   onSearchChange,
-  onGroupChange,
   onCategoryChange,
   onStatusChange,
 }) {
   const categoryOptions = [
     {
       value: "all",
-      label: "All categories",
+      label:
+        group === "all"
+          ? "All categories"
+          : `All ${formatGroupLabel(group).toLowerCase()} categories`,
     },
+
     ...categories
-      .filter((category) =>
-        group === "all" ? true : category.group_type === group,
-      )
+      .filter((category) => group === "all" || category.group_type === group)
       .map((category) => ({
         value: String(category.id),
         label: category.name,
@@ -28,22 +35,12 @@ function MenuFilters({
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <Input
         type="search"
         placeholder="Search menu..."
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
-      />
-
-      <Select
-        value={group}
-        onChange={onGroupChange}
-        options={[
-          { value: "all", label: "All" },
-          { value: "food", label: "Food" },
-          { value: "drink", label: "Drinks" },
-        ]}
       />
 
       <Select
@@ -56,10 +53,22 @@ function MenuFilters({
         value={status}
         onChange={onStatusChange}
         options={[
-          { value: "all", label: "All statuses" },
-          { value: "available", label: "Available" },
-          { value: "unavailable", label: "Unavailable" },
-          { value: "inactive", label: "Inactive" },
+          {
+            value: "all",
+            label: "All statuses",
+          },
+          {
+            value: "available",
+            label: "Available",
+          },
+          {
+            value: "unavailable",
+            label: "Unavailable",
+          },
+          {
+            value: "inactive",
+            label: "Inactive",
+          },
         ]}
       />
     </div>
