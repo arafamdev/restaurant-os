@@ -125,8 +125,79 @@ export async function getRestaurants() {
 export async function updateEmployeeStatus(employeeId, status) {
   const { data, error } = await supabase.rpc("update_employee_status", {
     p_employee_id: Number(employeeId),
-    p_status: status,
+    p_employee_status: status,
   });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// GET INDIVIDUAL EMPLOYEE PERMISSIONS
+export async function getEmployeePermissions(employeeId) {
+  const { data, error } = await supabase.rpc("get_employee_permissions", {
+    p_employee_id: Number(employeeId),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// GET EFFECTIVE EMPLOYEE PERMISSIONS
+export async function getEmployeeEffectivePermissions(employeeId) {
+  const { data, error } = await supabase.rpc(
+    "get_employee_effective_permissions",
+    {
+      p_employee_id: Number(employeeId),
+    },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// GRANT INDIVIDUAL EMPLOYEE PERMISSION
+export async function grantEmployeePermission(employeeId, permissionId) {
+  const { data, error } = await supabase.rpc("grant_employee_permission", {
+    p_employee_id: Number(employeeId),
+    p_permission_id: Number(permissionId),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// REVOKE INDIVIDUAL EMPLOYEE PERMISSION
+export async function revokeEmployeePermission(employeeId, permissionId) {
+  const { data, error } = await supabase.rpc("revoke_employee_permission", {
+    p_employee_id: Number(employeeId),
+    p_permission_id: Number(permissionId),
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+// GET ALL PERMISSIONS
+export async function getPermissions() {
+  const { data, error } = await supabase
+    .from("permissions")
+    .select("id, name")
+    .order("id");
 
   if (error) {
     throw new Error(error.message);

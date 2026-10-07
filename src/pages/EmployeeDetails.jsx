@@ -1,108 +1,34 @@
 import { useState } from "react";
-
-import { format } from "date-fns";
 import { useParams } from "react-router-dom";
-import toast from "react-hot-toast";
-
 import {
-  HiOutlineArrowLeft,
-  HiOutlineBriefcase,
-  HiOutlineBuildingStorefront,
-  HiOutlineCalendarDays,
   HiOutlineCheckCircle,
   HiOutlineEnvelope,
   HiOutlineIdentification,
   HiOutlinePhone,
   HiOutlineShieldCheck,
   HiOutlineUserCircle,
-  HiOutlineUserMinus,
-  HiOutlineUserPlus,
 } from "react-icons/hi2";
-
-import { useEmployee } from "../features/staff/hooks/useEmployee";
-import { useRoles } from "../features/staff/hooks/useRoles";
-import { useChangeEmployeeRole } from "../features/staff/hooks/useChangeEmployeeRole";
-import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
-import { useUpdateEmployeeStatus } from "../features/staff/hooks/useUpdateEmployeeStatus";
+import { toast } from "react-hot-toast";
 
 import BackButton from "../ui/BackButton";
 import Button from "../ui/Button";
-import Select from "../ui/Select";
 import ErrorMessage from "../ui/ErrorMessage";
+import Select from "../ui/Select";
 import Spinner from "../ui/Spinner";
 
-function formatRole(roleName) {
-  if (!roleName) {
-    return "Unknown role";
-  }
+import { useHasPermission } from "../features/auth/hooks/useHasPermission";
 
-  return roleName
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+import { useChangeEmployeeRole } from "../features/staff/hooks/useChangeEmployeeRole";
+import { useEmployee } from "../features/staff/hooks/useEmployee";
+import { useRoles } from "../features/staff/hooks/useRoles";
+import { useUpdateEmployeeStatus } from "../features/staff/hooks/useUpdateEmployeeStatus";
 
-function getInitials(name) {
-  if (!name) {
-    return "?";
-  }
+import EmployeePermissions from "../features/staff/components/EmployeePermissions";
 
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word.charAt(0))
-    .join("")
-    .toUpperCase();
-}
-
-function InfoItem({ icon: Icon, label, value, muted = false }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
-        <Icon className="h-5 w-5" />
-      </div>
-
-      <div className="min-w-0">
-        <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-          {label}
-        </p>
-
-        <p
-          className={`mt-1 truncate text-sm font-medium ${
-            muted ? "text-gray-400" : "text-gray-900"
-          }`}
-        >
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function SectionHeader({ icon: Icon, title, description }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-600">
-        <Icon className="h-5 w-5" />
-      </div>
-
-      <div>
-        <h2 className="text-base font-semibold tracking-tight text-gray-950">
-          {title}
-        </h2>
-
-        <p className="mt-0.5 text-sm text-gray-500">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function EmployeeDetails() {
+export default function EmployeeDetails() {
   const { employeeId } = useParams();
 
-  const [selectedRoleId, setSelectedRoleId] = useState("");
-  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
 
   const {
     employee,
@@ -111,12 +37,6 @@ function EmployeeDetails() {
   } = useEmployee(employeeId);
 
   const { roles, isLoading: isRolesLoading, error: rolesError } = useRoles();
-
-  const {
-    userContext,
-    isLoading: isUserContextLoading,
-    error: userContextError,
-  } = useCurrentUserContext();
 
   const {
     changeRole,
@@ -130,352 +50,311 @@ function EmployeeDetails() {
     error: updateStatusError,
   } = useUpdateEmployeeStatus();
 
-  if (isEmployeeLoading || isRolesLoading || isUserContextLoading) {
+  const {
+    hasPermission: canManageEmployeePermissions,
+    isLoading: isPermissionLoading,
+    error: permissionError,
+  } = useHasPermission("manage_employee_permissions");
+
+  if (isEmployeeLoading || isRolesLoading || isPermissionLoading) {
     return <Spinner />;
   }
 
   if (employeeError) {
-    return (
-      <ErrorMessage
-        message={employeeError.message}
-        backLabel="Back to Staff"
-        backTo="/staff"
-      />
-    );
+    return <ErrorMessage>{employeeError.message}</ErrorMessage>;
   }
 
   if (rolesError) {
-    return (
-      <ErrorMessage
-        message={rolesError.message}
-        backLabel="Back to Staff"
-        backTo="/staff"
-      />
-    );
+    return <ErrorMessage>{rolesError.message}</ErrorMessage>;
   }
 
-  if (userContextError) {
-    return (
-      <ErrorMessage
-        message={userContextError.message}
-        backLabel="Back to Staff"
-        backTo="/staff"
-      />
-    );
+  if (permissionError) {
+    return <ErrorMessage>{permissionError.message}</ErrorMessage>;
   }
 
   if (!employee) {
-    return (
-      <ErrorMessage
-        message="The requested employee could not be found."
-        backLabel="Back to Staff"
-        backTo="/staff"
-      />
-    );
+    return <ErrorMessage>Funcionário não encontrado.</ErrorMessage>;
   }
 
-  const canChangeRole =
-    userContext?.is_platform_admin ||
-    (userContext?.role_name === "manager" &&
-      userContext?.restaurant_id === employee.restaurant_id);
+  const roleId = employee.roles?.id ?? employee.role_id;
+  const roleName = employee.roles?.name ?? employee.role_name ?? "—";
 
-  const canChangeStatus =
-    userContext?.is_platform_admin ||
-    (userContext?.role_name === "manager" &&
-      userContext?.restaurant_id === employee.restaurant_id);
+  const isActive = employee.status === "active";
 
-  const currentRoleId = employee.role_id || employee.roles?.id;
-
-  const selectedRole = selectedRoleId || currentRoleId || "";
+  const canManagePermissions =
+    employee.is_platform_admin || canManageEmployeePermissions;
 
   const roleOptions =
     roles?.map((role) => ({
       value: role.id,
-      label: formatRole(role.name),
+      label: role.name,
     })) ?? [];
 
-  const isActive = employee.status === "active";
+  function handleRoleChange(newRoleId) {
+    const normalizedRoleId = Number(newRoleId);
 
-  const roleLabel = formatRole(employee.role_name || employee.roles?.name);
-
-  const initials = getInitials(employee.full_name);
-
-  function handleRoleChange() {
-    if (!selectedRole || Number(selectedRole) === Number(currentRoleId)) {
+    if (!normalizedRoleId || normalizedRoleId === Number(roleId)) {
       return;
     }
 
     changeRole(
       {
-        employeeId: employee.id,
-        roleId: Number(selectedRole),
+        employeeId: Number(employeeId),
+        roleId: normalizedRoleId,
       },
       {
         onSuccess: () => {
-          toast.success("Employee role updated successfully.");
+          toast.success("Função atualizada com sucesso.");
+        },
+        onError: (error) => {
+          toast.error(error.message);
         },
       },
     );
   }
 
   function handleStatusChange() {
-    if (isActive) {
-      setShowStatusModal(true);
-      return;
-    }
+    const newStatus = isActive ? "inactive" : "active";
 
     updateStatus(
       {
-        employeeId: employee.id,
-        status: "active",
+        employeeId: Number(employeeId),
+        status: newStatus,
       },
       {
         onSuccess: () => {
-          toast.success("Employee activated successfully.");
+          toast.success(
+            newStatus === "active"
+              ? "Funcionário ativado com sucesso."
+              : "Funcionário desativado com sucesso.",
+          );
+        },
+        onError: (error) => {
+          toast.error(error.message);
         },
       },
     );
   }
 
-  function handleConfirmDeactivate() {
-    updateStatus(
-      {
-        employeeId: employee.id,
-        status: "inactive",
-      },
-      {
-        onSuccess: () => {
-          setShowStatusModal(false);
-          toast.success("Employee deactivated successfully.");
-        },
-      },
-    );
-  }
+  const formattedCreatedAt = employee.created_at
+    ? new Date(employee.created_at).toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : "—";
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <BackButton to="/staff" label="Back to Staff" />
+    <>
+      <div className="mx-auto max-w-5xl space-y-6 pb-10">
+        {/* HEADER */}
+        <div className="flex items-center justify-between gap-4">
+          <BackButton to="/staff" />
 
-      {/* Employee hero */}
-      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm">
-        <div className="h-1 bg-gray-950" />
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${
+              isActive
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {isActive ? "Active" : "Inactive"}
+          </span>
+        </div>
 
-        <div className="p-6 sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            {/* Identity */}
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="relative">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gray-950 text-xl font-semibold tracking-tight text-white shadow-sm">
-                  {initials}
-                </div>
+        {/* EMPLOYEE HEADER */}
+        <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-100">
+              <HiOutlineUserCircle className="h-10 w-10 text-gray-500" />
+            </div>
 
-                <span
-                  className={`absolute right-1 bottom-1 h-3.5 w-3.5 rounded-full border-[3px] border-white ${
-                    isActive ? "bg-emerald-500" : "bg-gray-400"
-                  }`}
-                />
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-2xl font-semibold text-gray-900">
+                {employee.full_name}
+              </h1>
+
+              <p className="mt-1 text-sm text-gray-500">
+                {employee.restaurant_name ?? "RestaurantOS"}
+              </p>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                  {roleName}
+                </span>
+
+                <span className="text-xs text-gray-400">•</span>
+
+                <span className="text-sm text-gray-500">ID #{employee.id}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* EMPLOYEE INFORMATION */}
+        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <h2 className="font-semibold text-gray-900">
+              Employee information
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Basic information associated with this employee.
+            </p>
+          </div>
+
+          <div className="grid gap-5 p-5 sm:grid-cols-2">
+            {/* EMAIL */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
+                <HiOutlineEnvelope className="h-5 w-5 text-gray-500" />
               </div>
 
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-950">
-                    {employee.full_name}
-                  </h1>
-
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                      isActive
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        isActive ? "bg-emerald-500" : "bg-gray-400"
-                      }`}
-                    />
-
-                    {isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
-
-                <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
-                  <HiOutlineBriefcase className="h-4 w-4 shrink-0" />
-                  {roleLabel}
+                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+                  Email
                 </p>
 
-                <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-gray-400">
-                  <HiOutlineEnvelope className="h-4 w-4 shrink-0" />
-                  {employee.email || "No email available"}
+                <p className="mt-1 text-sm break-all text-gray-900">
+                  {employee.email ?? "—"}
                 </p>
               </div>
             </div>
 
-            {/* Role badge */}
-            <div className="hidden rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 sm:block">
-              <p className="text-[10px] font-bold tracking-[0.14em] text-gray-400 uppercase">
-                Current role
-              </p>
+            {/* PHONE */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
+                <HiOutlinePhone className="h-5 w-5 text-gray-500" />
+              </div>
 
-              <p className="mt-1 text-sm font-semibold text-gray-950">
-                {roleLabel}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+              <div className="min-w-0">
+                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+                  Phone
+                </p>
 
-      {/* Employee information */}
-      <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm sm:p-8">
-        <SectionHeader
-          icon={HiOutlineUserCircle}
-          title="Employee information"
-          description="Basic information associated with this employee."
-        />
-
-        <div className="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoItem
-            icon={HiOutlinePhone}
-            label="Phone"
-            value={employee.phone || "Not provided"}
-            muted={!employee.phone}
-          />
-
-          <InfoItem
-            icon={HiOutlineBuildingStorefront}
-            label="Restaurant"
-            value={employee.restaurant_name || "Unknown"}
-          />
-
-          <InfoItem
-            icon={HiOutlineIdentification}
-            label="Employee ID"
-            value={employee.id}
-          />
-
-          <InfoItem
-            icon={HiOutlineCalendarDays}
-            label="Created"
-            value={format(new Date(employee.created_at), "dd/MM/yyyy, HH:mm")}
-          />
-        </div>
-      </section>
-
-      {/* Role management */}
-      {canChangeRole && (
-        <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm sm:p-8">
-          <SectionHeader
-            icon={HiOutlineShieldCheck}
-            title="Role & permissions"
-            description="Change the employee's role and access level."
-          />
-
-          <div className="mt-7 rounded-2xl border border-gray-200 bg-gray-50/70 p-5">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div className="w-full max-w-md">
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Employee role
-                </label>
-
-                <Select
-                  value={selectedRole}
-                  onChange={setSelectedRoleId}
-                  options={roleOptions}
-                />
-
-                <p className="mt-2 text-xs text-gray-400">
-                  The selected role determines the employee's default
-                  permissions.
+                <p className="mt-1 text-sm text-gray-900">
+                  {employee.phone ?? "—"}
                 </p>
               </div>
-
-              <Button
-                onClick={handleRoleChange}
-                disabled={
-                  isChangingRole ||
-                  !selectedRole ||
-                  Number(selectedRole) === Number(currentRoleId)
-                }
-              >
-                {isChangingRole ? "Updating..." : "Update role"}
-              </Button>
             </div>
 
-            {changeRoleError && (
-              <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600">
-                  <span className="text-sm font-bold">!</span>
-                </div>
-
-                <div>
-                  <p className="text-sm font-semibold text-red-800">
-                    Unable to update role
-                  </p>
-
-                  <p className="mt-0.5 text-sm text-red-600">
-                    {changeRoleError.message}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Status management */}
-      {canChangeStatus && (
-        <section className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-sm sm:p-8">
-          <SectionHeader
-            icon={isActive ? HiOutlineUserMinus : HiOutlineUserPlus}
-            title="Employee status"
-            description="Control whether this employee can actively use the restaurant system."
-          />
-
-          <div className="mt-7 flex flex-col gap-5 rounded-2xl border border-gray-200 bg-gray-50/70 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-4">
-              <div
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                  isActive
-                    ? "bg-emerald-100 text-emerald-600"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-              >
-                {isActive ? (
-                  <HiOutlineCheckCircle className="h-5 w-5" />
-                ) : (
-                  <HiOutlineUserMinus className="h-5 w-5" />
-                )}
+            {/* EMPLOYEE ID */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
+                <HiOutlineIdentification className="h-5 w-5 text-gray-500" />
               </div>
 
               <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold text-gray-950">
-                    Account is {isActive ? "active" : "inactive"}
-                  </p>
-
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                      isActive
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {isActive ? "ACTIVE" : "INACTIVE"}
-                  </span>
-                </div>
-
-                <p className="mt-1 max-w-xl text-xs leading-5 text-gray-500">
-                  {isActive
-                    ? "This employee is currently active and can access RestaurantOS according to their permissions."
-                    : "This employee is currently inactive and should not be able to use the restaurant system."}
+                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+                  Employee ID
                 </p>
+
+                <p className="mt-1 text-sm text-gray-900">{employee.id}</p>
               </div>
             </div>
 
+            {/* CREATED */}
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
+                <HiOutlineCheckCircle className="h-5 w-5 text-gray-500" />
+              </div>
+
+              <div>
+                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+                  Created
+                </p>
+
+                <p className="mt-1 text-sm text-gray-900">
+                  {formattedCreatedAt}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ROLE & PERMISSIONS */}
+        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-gray-100 p-2">
+                <HiOutlineShieldCheck className="h-5 w-5 text-gray-500" />
+              </div>
+
+              <div>
+                <h2 className="font-semibold text-gray-900">
+                  Role & permissions
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Change the employee's role and access level.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-5 p-5">
+            <div className="max-w-md">
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Employee role
+              </label>
+
+              <Select
+                value={Number(roleId)}
+                onChange={handleRoleChange}
+                options={roleOptions}
+              />
+
+              <p className="mt-2 text-xs text-gray-500">
+                The selected role determines the employee's default permissions.
+              </p>
+            </div>
+
+            {isChangingRole && (
+              <p className="text-sm text-gray-500">Updating role...</p>
+            )}
+
+            {changeRoleError && (
+              <ErrorMessage>{changeRoleError.message}</ErrorMessage>
+            )}
+          </div>
+        </section>
+
+        {/* EMPLOYEE STATUS */}
+        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <h2 className="font-semibold text-gray-900">Employee status</h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Control whether this employee can actively use the restaurant
+              system.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${
+                    isActive ? "bg-green-500" : "bg-red-500"
+                  }`}
+                />
+
+                <span className="text-sm font-medium text-gray-900">
+                  Account is {isActive ? "active" : "inactive"}
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm text-gray-500">
+                {isActive
+                  ? "This employee is currently active and can access RestaurantOS according to their permissions."
+                  : "This employee is currently inactive and cannot actively use RestaurantOS."}
+              </p>
+            </div>
+
             <Button
+              type="button"
               onClick={handleStatusChange}
               disabled={isUpdatingStatus}
-              variation={isActive ? "danger" : "primary"}
             >
               {isUpdatingStatus
                 ? "Updating..."
@@ -486,79 +365,51 @@ function EmployeeDetails() {
           </div>
 
           {updateStatusError && (
-            <div className="mt-4 flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600">
-                <span className="text-sm font-bold">!</span>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-red-800">
-                  Unable to update status
-                </p>
-
-                <p className="mt-0.5 text-sm text-red-600">
-                  {updateStatusError.message}
-                </p>
-              </div>
+            <div className="px-5 pb-5">
+              <ErrorMessage>{updateStatusError.message}</ErrorMessage>
             </div>
           )}
         </section>
-      )}
 
-      {/* Deactivate confirmation modal */}
-      {showStatusModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="deactivate-employee-title"
-            className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl"
-          >
-            <div className="flex items-start gap-4">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-                <HiOutlineUserMinus className="h-5 w-5" />
+        {/* EMPLOYEE PERMISSIONS */}
+        {canManagePermissions && (
+          <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-gray-100 p-2">
+                  <HiOutlineShieldCheck className="h-5 w-5 text-gray-500" />
+                </div>
+
+                <div>
+                  <h2 className="font-semibold text-gray-900">
+                    Employee permissions
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Manage permissions granted specifically to this employee.
+                  </p>
+                </div>
               </div>
 
-              <div className="min-w-0">
-                <h2
-                  id="deactivate-employee-title"
-                  className="text-base font-semibold text-gray-950"
-                >
-                  Deactivate employee
-                </h2>
-
-                <p className="mt-1 text-sm leading-6 text-gray-500">
-                  Are you sure you want to deactivate{" "}
-                  <span className="font-semibold text-gray-700">
-                    {employee.full_name}
-                  </span>
-                  ?
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
               <Button
-                variation="secondary"
-                onClick={() => setShowStatusModal(false)}
-                disabled={isUpdatingStatus}
+                type="button"
+                onClick={() => setIsPermissionsModalOpen(true)}
               >
-                Cancel
-              </Button>
-
-              <Button
-                variation="danger"
-                onClick={handleConfirmDeactivate}
-                disabled={isUpdatingStatus}
-              >
-                {isUpdatingStatus ? "Deactivating..." : "Deactivate"}
+                Manage permissions
               </Button>
             </div>
-          </div>
-        </div>
+          </section>
+        )}
+      </div>
+
+      {/* PERMISSIONS MODAL */}
+      {canManagePermissions && (
+        <EmployeePermissions
+          employeeId={Number(employeeId)}
+          isOpen={isPermissionsModalOpen}
+          onClose={() => setIsPermissionsModalOpen(false)}
+        />
       )}
-    </div>
+    </>
   );
 }
-
-export default EmployeeDetails;
