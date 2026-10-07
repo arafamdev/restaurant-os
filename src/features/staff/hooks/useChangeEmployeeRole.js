@@ -14,12 +14,26 @@ export function useChangeEmployeeRole() {
       changeEmployeeRole(employeeId, roleId),
 
     onSuccess: (_, variables) => {
+      const employeeId = Number(variables.employeeId);
+
+      // Atualiza a lista de funcionários.
       queryClient.invalidateQueries({
         queryKey: ["employees"],
       });
 
+      // Atualiza os dados do funcionário.
       queryClient.invalidateQueries({
-        queryKey: ["employee", String(variables.employeeId)],
+        queryKey: ["employee", employeeId],
+      });
+
+      // Atualiza as permissões individuais.
+      queryClient.invalidateQueries({
+        queryKey: ["employee-permissions", employeeId],
+      });
+
+      // Atualiza as permissões efetivas provenientes do novo role.
+      queryClient.invalidateQueries({
+        queryKey: ["employee-effective-permissions", employeeId],
       });
     },
   });

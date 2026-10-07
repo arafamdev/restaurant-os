@@ -403,13 +403,12 @@ export default function EmployeeDetails() {
       </div>
 
       {/* PERMISSIONS MODAL */}
-      {canManagePermissions && (
-        <EmployeePermissions
-          employeeId={Number(employeeId)}
-          isOpen={isPermissionsModalOpen}
-          onClose={() => setIsPermissionsModalOpen(false)}
-        />
-      )}
+      <EmployeePermissions
+        employeeId={Number(employeeId)}
+        roleName={roleName}
+        isOpen={isPermissionsModalOpen}
+        onClose={() => setIsPermissionsModalOpen(false)}
+      />
     </>
   );
 }

@@ -125,7 +125,7 @@ export async function getRestaurants() {
 export async function updateEmployeeStatus(employeeId, status) {
   const { data, error } = await supabase.rpc("update_employee_status", {
     p_employee_id: Number(employeeId),
-    p_employee_status: status,
+    p_status: status,
   });
 
   if (error) {

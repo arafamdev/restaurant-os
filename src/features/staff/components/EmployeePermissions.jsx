@@ -6,9 +6,11 @@ import {
   HiOutlineTrash,
   HiOutlineXMark,
 } from "react-icons/hi2";
-import toast from "react-hot-toast";
+
+import { toast } from "react-hot-toast";
 
 import Button from "../../../ui/Button";
+import Modal from "../../../ui/Modal";
 import Select from "../../../ui/Select";
 import Spinner from "../../../ui/Spinner";
 
@@ -17,7 +19,46 @@ import { useGrantEmployeePermission } from "../hooks/useGrantEmployeePermission"
 import { usePermissions } from "../hooks/usePermissions";
 import { useRevokeEmployeePermission } from "../hooks/useRevokeEmployeePermission";
 
-function EmployeePermissions({ employeeId, isOpen, onClose }) {
+function formatPermissionName(permissionName) {
+  if (!permissionName) return "";
+
+  return permissionName
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getSourceLabel(source) {
+  switch (source) {
+    case "role":
+      return "Role";
+    case "individual":
+      return "Individual";
+    case "role + individual":
+      return "Role + Individual";
+    default:
+      return source;
+  }
+}
+
+function getSourceClassName(source) {
+  switch (source) {
+    case "role":
+      return "bg-blue-50 text-blue-700";
+    case "individual":
+      return "bg-green-50 text-green-700";
+    case "role + individual":
+      return "bg-purple-50 text-purple-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+}
+
+function EmployeePermissions({ employeeId, roleName, isOpen, onClose }) {
+  const [selectedPermissionId, setSelectedPermissionId] = useState("");
+
+  const isManager = roleName === "manager";
+
   const {
     permissions: employeePermissions,
     effectivePermissions,
@@ -29,315 +70,248 @@ function EmployeePermissions({ employeeId, isOpen, onClose }) {
 
   const {
     permissions,
-    isLoading: isCatalogLoading,
-    error: catalogError,
+    isLoading: isPermissionsLoading,
+    error: permissionsError,
   } = usePermissions();
 
-  const {
-    grantPermission,
-    isPending: isGranting,
-    error: grantError,
-  } = useGrantEmployeePermission();
+  const { grantPermission, isGranting } = useGrantEmployeePermission();
+  const { revokePermission, isRevoking } = useRevokeEmployeePermission();
 
-  const {
-    revokePermission,
-    isPending: isRevoking,
-    error: revokeError,
-  } = useRevokeEmployeePermission();
+  if (!isOpen) return null;
 
-  const [selectedPermissionId, setSelectedPermissionId] = useState("");
+  const isLoading =
+    isEmployeePermissionsLoading ||
+    isEffectivePermissionsLoading ||
+    isPermissionsLoading;
 
-  if (!isOpen) {
-    return null;
-  }
+  const error =
+    employeePermissionsError || effectivePermissionsError || permissionsError;
 
-  /*
-   * IDs das permissões que o funcionário já possui
-   * através do role ou de permissões individuais.
-   */
-  const effectivePermissionIds =
-    effectivePermissions?.map((permission) =>
+  const effectivePermissionIds = new Set(
+    (effectivePermissions ?? []).map((permission) =>
       Number(permission.permission_id),
-    ) ?? [];
+    ),
+  );
 
-  /*
-   * Apenas permissões que o funcionário ainda NÃO possui
-   * podem aparecer no Select para serem atribuídas.
-   */
-  const availablePermissions =
-    permissions?.filter(
-      (permission) => !effectivePermissionIds.includes(Number(permission.id)),
-    ) ?? [];
+  const availablePermissions = (permissions ?? []).filter(
+    (permission) => !effectivePermissionIds.has(Number(permission.id)),
+  );
 
-  const permissionOptions = availablePermissions.map((permission) => ({
-    value: permission.id,
-    label: permission.name,
-  }));
-
-  function handlePermissionChange(permissionId) {
-    setSelectedPermissionId(permissionId);
-  }
-
-  function handleGrantPermission() {
-    const permissionId = Number(selectedPermissionId);
-
-    if (!permissionId) {
-      return;
-    }
+  function handleGrant() {
+    if (!selectedPermissionId) return;
 
     grantPermission(
       {
-        employeeId: Number(employeeId),
-        permissionId,
+        employeeId,
+        permissionId: Number(selectedPermissionId),
       },
       {
         onSuccess: () => {
           toast.success("Permission granted successfully.");
           setSelectedPermissionId("");
         },
-        onError: (error) => {
-          toast.error(error.message);
-        },
       },
     );
   }
 
-  function handleRevokePermission(permissionId) {
+  function handleRevoke(permissionId) {
     revokePermission(
       {
-        employeeId: Number(employeeId),
+        employeeId,
         permissionId: Number(permissionId),
       },
       {
         onSuccess: () => {
           toast.success("Individual permission removed successfully.");
         },
-        onError: (error) => {
-          toast.error(error.message);
-        },
       },
     );
   }
 
-  if (
-    isEmployeePermissionsLoading ||
-    isEffectivePermissionsLoading ||
-    isCatalogLoading
-  ) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="flex min-h-[220px] w-full max-w-2xl items-center justify-center rounded-xl bg-white shadow-2xl">
-          <Spinner />
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-emerald-50 p-2">
-              <HiOutlineShieldCheck className="h-5 w-5 text-emerald-600" />
-            </div>
+    <Modal onClose={onClose} size="large" closeOnOverlayClick closeOnEscape>
+      {/* HEADER */}
+      <div className="flex items-start justify-between border-b border-gray-200 pb-5">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Employee permissions
+          </h2>
 
-            <div>
-              <h2 className="font-semibold text-gray-900">
-                Employee permissions
-              </h2>
-
-              <p className="text-sm text-gray-500">
-                Manage permissions for this employee.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
-            aria-label="Close"
-          >
-            <HiOutlineXMark className="h-5 w-5" />
-          </button>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage permissions granted specifically to this employee.
+          </p>
         </div>
 
-        {/* CONTENT */}
-        <div className="overflow-y-auto bg-white px-5 py-5">
-          {/* EFFECTIVE PERMISSIONS */}
-          <section>
-            <h3 className="text-sm font-semibold text-gray-900">
-              Effective permissions
-            </h3>
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-lg p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+          aria-label="Close"
+        >
+          <HiOutlineXMark className="h-5 w-5" />
+        </button>
+      </div>
 
-            <p className="mt-1 text-sm text-gray-500">
-              All permissions currently available to this employee through their
-              role or individual assignments.
-            </p>
+      {/* CONTENT */}
+      <div className="max-h-[65vh] overflow-y-auto py-5">
+        {isLoading && (
+          <div className="flex justify-center py-12">
+            <Spinner />
+          </div>
+        )}
 
-            {effectivePermissionsError && (
-              <p className="mt-3 text-sm text-red-600">
-                {effectivePermissionsError.message}
-              </p>
-            )}
+        {!isLoading && error && (
+          <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+            {error.message}
+          </div>
+        )}
 
-            {!effectivePermissionsError && effectivePermissions?.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {effectivePermissions.map((permission) => (
-                  <div
-                    key={permission.permission_id}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3"
-                  >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <HiOutlineCheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+        {!isLoading && !error && (
+          <div className="space-y-6">
+            {/* EFFECTIVE PERMISSIONS */}
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <HiOutlineShieldCheck className="h-5 w-5 text-gray-600" />
 
-                      <span className="truncate text-sm font-medium text-gray-800">
-                        {permission.permission_name}
-                      </span>
-                    </div>
+                <div>
+                  <h3 className="font-medium text-gray-900">
+                    Effective permissions
+                  </h3>
 
-                    <span className="ml-4 shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-medium text-gray-500 ring-1 ring-gray-200">
-                      {permission.source === "role + individual"
-                        ? "Role + Individual"
-                        : permission.source === "individual"
-                          ? "Individual"
-                          : "Role"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!effectivePermissionsError &&
-              effectivePermissions?.length === 0 && (
-                <div className="mt-4 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center">
                   <p className="text-sm text-gray-500">
-                    No effective permissions found.
+                    Permissions currently available to this employee.
                   </p>
                 </div>
-              )}
-          </section>
-
-          {/* INDIVIDUAL PERMISSIONS */}
-          <section className="mt-8 border-t border-gray-200 pt-6">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900">
-                Individual permissions
-              </h3>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Give this employee additional permissions outside their role.
-              </p>
-            </div>
-
-            {/* GRANT */}
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="w-full sm:max-w-sm">
-                <Select
-                  value={selectedPermissionId}
-                  onChange={handlePermissionChange}
-                  options={[
-                    {
-                      value: "",
-                      label:
-                        availablePermissions.length > 0
-                          ? "Select a permission..."
-                          : "No additional permissions",
-                    },
-                    ...permissionOptions,
-                  ]}
-                />
               </div>
 
-              <Button
-                type="button"
-                disabled={!selectedPermissionId || isGranting}
-                onClick={handleGrantPermission}
-              >
-                {isGranting ? "Granting..." : "Grant permission"}
-              </Button>
-            </div>
+              {isManager && (
+                <div className="mb-4 rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+                  This employee is a manager. Their permissions are determined
+                  by the manager role.
+                </div>
+              )}
 
-            {catalogError && (
-              <p className="mt-3 text-sm text-red-600">
-                {catalogError.message}
-              </p>
-            )}
-
-            {grantError && (
-              <p className="mt-3 text-sm text-red-600">{grantError.message}</p>
-            )}
-
-            {/* INDIVIDUAL GRANTS */}
-            <div className="mt-5">
-              <h4 className="text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                Individually assigned
-              </h4>
-
-              {employeePermissions?.length > 0 ? (
-                <div className="mt-3 space-y-2">
-                  {employeePermissions.map((permission) => (
+              {effectivePermissions?.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
+                  No effective permissions found.
+                </div>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {effectivePermissions.map((permission) => (
                     <div
-                      key={permission.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3"
+                      key={permission.permission_id}
+                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
                     >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <HiOutlineCheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
+                      <div className="flex min-w-0 items-center gap-2">
+                        <HiOutlineCheckCircle className="h-4 w-4 shrink-0 text-green-600" />
 
                         <span className="truncate text-sm font-medium text-gray-800">
-                          {permission.permission_name}
+                          {formatPermissionName(permission.permission_name)}
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleRevokePermission(permission.permission_id)
-                        }
-                        disabled={isRevoking}
-                        className="ml-4 rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                        title="Remove permission"
+                      <span
+                        className={`ml-2 shrink-0 rounded-full px-2 py-1 text-xs font-medium ${getSourceClassName(
+                          permission.source,
+                        )}`}
                       >
-                        <HiOutlineTrash className="h-4 w-4" />
-                      </button>
+                        {getSourceLabel(permission.source)}
+                      </span>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="mt-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-5 text-center">
+              )}
+            </section>
+
+            {/* INDIVIDUAL PERMISSIONS */}
+            {!isManager && (
+              <section className="border-t border-gray-200 pt-6">
+                <div className="mb-3">
+                  <h3 className="font-medium text-gray-900">
+                    Individual permissions
+                  </h3>
+
                   <p className="text-sm text-gray-500">
-                    No individual permissions assigned.
+                    Add or remove permissions specifically assigned to this
+                    employee.
                   </p>
                 </div>
-              )}
-            </div>
 
-            {employeePermissionsError && (
-              <p className="mt-3 text-sm text-red-600">
-                {employeePermissionsError.message}
-              </p>
+                {/* GRANT */}
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex-1">
+                    <Select
+                      value={selectedPermissionId}
+                      onChange={setSelectedPermissionId}
+                      options={[
+                        {
+                          value: "",
+                          label: "Select a permission",
+                        },
+                        ...availablePermissions.map((permission) => ({
+                          value: permission.id,
+                          label: formatPermissionName(permission.name),
+                        })),
+                      ]}
+                    />
+                  </div>
+
+                  <Button
+                    type="button"
+                    onClick={handleGrant}
+                    disabled={!selectedPermissionId || isGranting}
+                  >
+                    {isGranting ? "Granting..." : "Grant permission"}
+                  </Button>
+                </div>
+
+                {/* INDIVIDUAL LIST */}
+                <div className="mt-4 space-y-2">
+                  {employeePermissions?.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
+                      No individual permissions assigned.
+                    </div>
+                  ) : (
+                    employeePermissions.map((permission) => (
+                      <div
+                        key={permission.permission_id}
+                        className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <HiOutlineCheckCircle className="h-4 w-4 text-green-600" />
+
+                          <span className="text-sm font-medium text-gray-800">
+                            {formatPermissionName(permission.permission_name)}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRevoke(permission.permission_id)}
+                          disabled={isRevoking}
+                          className="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                          title="Remove individual permission"
+                          aria-label="Remove individual permission"
+                        >
+                          <HiOutlineTrash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
             )}
-
-            {revokeError && (
-              <p className="mt-3 text-sm text-red-600">{revokeError.message}</p>
-            )}
-          </section>
-        </div>
-
-        {/* FOOTER */}
-        <div className="flex justify-end border-t border-gray-200 bg-gray-50 px-5 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50"
-          >
-            Close
-          </button>
-        </div>
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* FOOTER */}
+      <div className="flex justify-end border-t border-gray-200 pt-4">
+        <Button type="button" variation="secondary" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+    </Modal>
   );
 }
 
