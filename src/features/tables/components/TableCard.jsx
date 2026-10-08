@@ -1,5 +1,7 @@
 import { useState } from "react";
+
 import { NavLink, useNavigate } from "react-router-dom";
+
 import { HiOutlineMapPin, HiOutlineUsers } from "react-icons/hi2";
 
 import { useDeleteTable } from "../hooks/useDeleteTable";
@@ -7,9 +9,10 @@ import { useDeleteTable } from "../hooks/useDeleteTable";
 import TableVisual from "./TableVisual";
 
 import Button from "../../../ui/Button";
+
 import ConfirmModal from "../../../ui/ConfirmModal";
 
-function TableCard({ table, view = "compact" }) {
+function TableCard({ table, view = "compact", canManage = false }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const navigate = useNavigate();
@@ -24,12 +27,26 @@ function TableCard({ table, view = "compact" }) {
 
   const currentStatus = statusStyles[table.status] || statusStyles.available;
 
+  function handleEdit() {
+    if (!canManage) return;
+
+    navigate(`/tables/${table.id}/edit`);
+  }
+
   function handleDelete() {
+    if (!canManage) return;
+
     deleteTable(table.id, {
       onSuccess: () => {
         setIsDeleteModalOpen(false);
       },
     });
+  }
+
+  function handleOpenDeleteModal() {
+    if (!canManage) return;
+
+    setIsDeleteModalOpen(true);
   }
 
   const isLarge = view === "large";
@@ -88,35 +105,35 @@ function TableCard({ table, view = "compact" }) {
         </div>
 
         {/* Actions */}
-        <div className="mt-3 flex gap-2">
-          <Button
-            variation="secondary"
-            size="small"
-            onClick={() => navigate(`/tables/${table.id}/edit`)}
-          >
-            Edit
-          </Button>
+        {canManage && (
+          <div className="mt-3 flex gap-2">
+            <Button variation="secondary" size="small" onClick={handleEdit}>
+              Edit
+            </Button>
 
-          <Button
-            variation="danger"
-            size="small"
-            onClick={() => setIsDeleteModalOpen(true)}
-          >
-            Delete
-          </Button>
-        </div>
+            <Button
+              variation="danger"
+              size="small"
+              onClick={handleOpenDeleteModal}
+            >
+              Delete
+            </Button>
+          </div>
+        )}
       </article>
 
-      <ConfirmModal
-        open={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleDelete}
-        title="Delete table?"
-        description={`Are you sure you want to delete Table ${table.table_number}? This action cannot be undone.`}
-        confirmText="Delete table"
-        cancelText="Cancel"
-        isLoading={isDeleting}
-      />
+      {canManage && (
+        <ConfirmModal
+          open={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDelete}
+          title="Delete table?"
+          description={`Are you sure you want to delete Table ${table.table_number}? This action cannot be undone.`}
+          confirmText="Delete table"
+          cancelText="Cancel"
+          isLoading={isDeleting}
+        />
+      )}
     </>
   );
 }

@@ -2,10 +2,11 @@ import { useForm } from "react-hook-form";
 
 import { useCreateTable } from "../hooks/useCreateTable";
 import { useUpdateTable } from "../hooks/useUpdateTable";
+import { useRestaurants } from "../../staff/hooks/useRestaurants";
 
 import Button from "../../../ui/Button";
 
-function TableForm({ tableToEdit = {}, onSuccess }) {
+function TableForm({ tableToEdit = {}, onSuccess, userContext }) {
   const {
     register,
     handleSubmit,
@@ -16,6 +17,7 @@ function TableForm({ tableToEdit = {}, onSuccess }) {
       tableNumber: tableToEdit.table_number ?? "",
       capacity: tableToEdit.capacity ?? "",
       location: tableToEdit.location ?? "indoor",
+      restaurantId: tableToEdit.restaurant_id ?? "",
     },
   });
 
@@ -23,6 +25,13 @@ function TableForm({ tableToEdit = {}, onSuccess }) {
   const { updateTable, isUpdating } = useUpdateTable();
 
   const isEditing = Boolean(tableToEdit.id);
+  const isPlatformAdmin = Boolean(userContext?.is_platform_admin);
+
+  const {
+    restaurants,
+    isLoading: isLoadingRestaurants,
+    error: restaurantsError,
+  } = useRestaurants(!isEditing && isPlatformAdmin);
 
   function onSubmit(data) {
     const tableData = {
@@ -51,6 +60,9 @@ function TableForm({ tableToEdit = {}, onSuccess }) {
       {
         ...tableData,
         status: "available",
+        ...(isPlatformAdmin && {
+          restaurant_id: Number(data.restaurantId),
+        }),
       },
       {
         onSuccess: () => {
@@ -60,6 +72,14 @@ function TableForm({ tableToEdit = {}, onSuccess }) {
       },
     );
   }
+
+  const restaurantOptions =
+    restaurants?.map((restaurant) => ({
+      value: restaurant.id,
+      label: restaurant.name,
+    })) ?? [];
+
+  const isLoading = isCreating || isUpdating || isLoadingRestaurants;
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -71,11 +91,53 @@ function TableForm({ tableToEdit = {}, onSuccess }) {
         <p className="mt-1 text-sm text-gray-500">
           {isEditing
             ? "Update the table information"
-            : " Create a new table for the restaurant."}
+            : "Create a new table for the restaurant."}
         </p>
       </div>
 
+      {restaurantsError && !isEditing && isPlatformAdmin && (
+        <p className="mb-4 text-sm text-red-600">{restaurantsError.message}</p>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {!isEditing && isPlatformAdmin && (
+          <div>
+            <label
+              htmlFor="restaurantId"
+              className="mb-1.5 block text-sm font-medium text-gray-700"
+            >
+              Restaurant
+            </label>
+
+            <select
+              id="restaurantId"
+              {...register("restaurantId", {
+                required: "Restaurant is required",
+              })}
+              disabled={isLoadingRestaurants}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 transition outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:cursor-not-allowed disabled:bg-gray-100"
+            >
+              <option value="">
+                {isLoadingRestaurants
+                  ? "Loading restaurants..."
+                  : "Select a restaurant"}
+              </option>
+
+              {restaurantOptions.map((restaurant) => (
+                <option key={restaurant.value} value={restaurant.value}>
+                  {restaurant.label}
+                </option>
+              ))}
+            </select>
+
+            {errors.restaurantId && (
+              <p className="mt-1.5 text-sm text-red-600">
+                {errors.restaurantId.message}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Table number */}
         <div>
           <label
@@ -159,7 +221,7 @@ function TableForm({ tableToEdit = {}, onSuccess }) {
         <div className="flex justify-end pt-2">
           <Button
             type="submit"
-            disabled={isCreating || isUpdating}
+            disabled={isLoading}
             className="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500/30 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isUpdating

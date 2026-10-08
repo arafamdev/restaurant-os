@@ -1,6 +1,13 @@
 import DailyMenuCard from "./DailyMenuCard";
 
-function DailyMenuList({ dailyMenus, view, onEdit, onToggleActive, onDelete }) {
+function DailyMenuList({
+  dailyMenus,
+  view,
+  onEdit,
+  onToggleActive,
+  onDelete,
+  canManage = false,
+}) {
   if (dailyMenus.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
@@ -9,7 +16,9 @@ function DailyMenuList({ dailyMenus, view, onEdit, onToggleActive, onDelete }) {
         </h3>
 
         <p className="mt-2 text-sm text-gray-500">
-          Create your first daily menu offer.
+          {canManage
+            ? "Create your first daily menu offer."
+            : "There are no daily menu offers available."}
         </p>
       </div>
     );
@@ -33,6 +42,7 @@ function DailyMenuList({ dailyMenus, view, onEdit, onToggleActive, onDelete }) {
           onEdit={onEdit}
           onToggleActive={onToggleActive}
           onDelete={onDelete}
+          canManage={canManage}
         />
       ))}
     </div>

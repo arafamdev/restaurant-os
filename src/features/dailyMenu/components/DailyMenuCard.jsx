@@ -1,6 +1,13 @@
 import Button from "../../../ui/Button";
 
-function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
+function DailyMenuCard({
+  dailyMenu,
+  view,
+  onEdit,
+  onToggleActive,
+  onDelete,
+  canManage = false,
+}) {
   const {
     name,
     description,
@@ -39,12 +46,16 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
     : "bg-gray-100 text-gray-500";
 
   function renderActions() {
+    if (!canManage) {
+      return null;
+    }
+
     return (
       <div className="flex flex-wrap items-center gap-2">
         <Button
           size="small"
           variation="secondary"
-          onClick={() => onEdit(dailyMenu)}
+          onClick={() => onEdit?.(dailyMenu)}
         >
           Edit
         </Button>
@@ -52,7 +63,7 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
         <Button
           size="small"
           variation={is_active ? "danger" : "secondary"}
-          onClick={() => onToggleActive(dailyMenu)}
+          onClick={() => onToggleActive?.(dailyMenu)}
         >
           {is_active ? "Deactivate" : "Activate"}
         </Button>
@@ -60,7 +71,7 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
         <Button
           size="small"
           variation="danger"
-          onClick={() => onDelete(dailyMenu)}
+          onClick={() => onDelete?.(dailyMenu)}
         >
           Delete
         </Button>
@@ -71,6 +82,7 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
   /*
    * LARGE VIEW
    */
+
   if (view === "large") {
     return (
       <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -142,9 +154,11 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
           )}
         </div>
 
-        <div className="mt-5 border-t border-gray-100 pt-4">
-          {renderActions()}
-        </div>
+        {canManage && (
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            {renderActions()}
+          </div>
+        )}
       </article>
     );
   }
@@ -152,6 +166,7 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
   /*
    * COMPACT VIEW
    */
+
   if (view === "compact") {
     return (
       <article className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
@@ -217,9 +232,11 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
           </div>
         )}
 
-        <div className="mt-4 border-t border-gray-100 pt-3">
-          {renderActions()}
-        </div>
+        {canManage && (
+          <div className="mt-4 border-t border-gray-100 pt-3">
+            {renderActions()}
+          </div>
+        )}
       </article>
     );
   }
@@ -227,6 +244,7 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
   /*
    * LIST VIEW
    */
+
   return (
     <div className="border-b border-gray-100 px-5 py-5 last:border-b-0">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -270,7 +288,7 @@ function DailyMenuCard({ dailyMenu, view, onEdit, onToggleActive, onDelete }) {
           )}
         </div>
 
-        <div className="shrink-0">{renderActions()}</div>
+        {canManage && <div className="shrink-0">{renderActions()}</div>}
       </div>
     </div>
   );

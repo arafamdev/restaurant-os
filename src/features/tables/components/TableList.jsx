@@ -1,16 +1,19 @@
 import { NavLink } from "react-router-dom";
+
 import { HiOutlineMapPin, HiOutlineUsers } from "react-icons/hi2";
 
 import TableCard from "./TableCard";
 
-function TableList({ tables, view = "compact" }) {
+function TableList({ tables, view = "compact", canManage = false }) {
   if (!tables?.length) {
     return (
       <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
         <p className="text-sm font-medium text-gray-700">No tables found</p>
 
         <p className="mt-1 text-sm text-gray-400">
-          Create a table to start managing your restaurant floor.
+          {canManage
+            ? "Create a table to start managing your restaurant floor."
+            : "There are no tables available to display."}
         </p>
       </div>
     );
@@ -31,7 +34,7 @@ function TableList({ tables, view = "compact" }) {
         {/* Rows */}
         <div className="divide-y divide-gray-100">
           {tables.map((table) => (
-            <TableCardList key={table.id} table={table} />
+            <TableCardList key={table.id} table={table} canManage={canManage} />
           ))}
         </div>
       </div>
@@ -46,13 +49,18 @@ function TableList({ tables, view = "compact" }) {
   return (
     <div className={gridClass}>
       {tables.map((table) => (
-        <TableCard key={table.id} table={table} view={view} />
+        <TableCard
+          key={table.id}
+          table={table}
+          view={view}
+          canManage={canManage}
+        />
       ))}
     </div>
   );
 }
 
-function TableCardList({ table }) {
+function TableCardList({ table, canManage = false }) {
   const statusStyles = {
     available: "bg-emerald-50 text-emerald-700",
     occupied: "bg-blue-50 text-blue-700",
@@ -107,12 +115,14 @@ function TableCardList({ table }) {
           View
         </NavLink>
 
-        <NavLink
-          to={`/tables/${table.id}/edit`}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
-        >
-          Edit
-        </NavLink>
+        {canManage && (
+          <NavLink
+            to={`/tables/${table.id}/edit`}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            Edit
+          </NavLink>
+        )}
       </div>
     </div>
   );

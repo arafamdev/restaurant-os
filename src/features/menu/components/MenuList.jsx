@@ -46,6 +46,7 @@ function MenuList({
   view = "compact",
   onEdit,
   onToggleActive,
+  canManage = false,
 }) {
   const visibleGroups = [
     ...new Set(
@@ -117,6 +118,7 @@ function MenuList({
                   view={view}
                   onEdit={onEdit}
                   onToggleActive={onToggleActive}
+                  canManage={canManage}
                 />
               ))}
             </div>

@@ -6,6 +6,7 @@ function MenuCategorySection({
   view = "compact",
   onEdit,
   onToggleActive,
+  canManage = false,
 }) {
   const categoryItems = menuItems.filter(
     (item) => item.category_id === category.id,
@@ -40,6 +41,7 @@ function MenuCategorySection({
               view="list"
               onEdit={onEdit}
               onToggleActive={onToggleActive}
+              canManage={canManage}
             />
           ))}
         </div>
@@ -72,6 +74,7 @@ function MenuCategorySection({
               view="compact"
               onEdit={onEdit}
               onToggleActive={onToggleActive}
+              canManage={canManage}
             />
           ))}
         </div>
@@ -103,6 +106,7 @@ function MenuCategorySection({
             view="large"
             onEdit={onEdit}
             onToggleActive={onToggleActive}
+            canManage={canManage}
           />
         ))}
       </div>

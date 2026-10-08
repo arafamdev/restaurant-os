@@ -5,35 +5,26 @@ import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import ViewSwitcher from "../ui/ViewSwitcher";
-
 import useViewMode from "../hooks/useViewMode";
-
 import { useMenuItems } from "../features/menu/hooks/useMenuItems";
-
 import { useMenuCategories } from "../features/menu/hooks/useMenuCategories";
-
 import { useUpdateMenuItem } from "../features/menu/hooks/useUpdateMenuItem";
-
 import useMenuFilters from "../features/menu/hooks/useMenuFilters";
-
 import MenuFilters from "../features/menu/components/MenuFilters";
 import MenuGroupSwitcher from "../features/menu/components/MenuGroupSwitcher";
 import MenuList from "../features/menu/components/MenuList";
 import MenuItemForm from "../features/menu/components/MenuItemForm";
 import MenuStats from "../features/menu/components/MenuStats";
+import { useHasPermission } from "../features/auth/hooks/useHasPermission";
 
 function Menu() {
   const [group, setGroup] = useState("all");
   const [categoryId, setCategoryId] = useState("all");
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
-
   const [view, setView] = useViewMode("menu");
-
   const [isCreating, setIsCreating] = useState(false);
-
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
-
   const [menuItemToToggle, setMenuItemToToggle] = useState(null);
 
   const {
@@ -50,6 +41,12 @@ function Menu() {
 
   const { updateItem, isUpdating } = useUpdateMenuItem();
 
+  const {
+    hasPermission: canManageMenu,
+    isLoading: isPermissionLoading,
+    error: permissionError,
+  } = useHasPermission("manage_menu");
+
   const { filteredMenuItems } = useMenuFilters({
     menuItems,
     search,
@@ -58,9 +55,10 @@ function Menu() {
     status,
   });
 
-  const isLoading = isLoadingItems || isLoadingCategories;
+  const isLoading =
+    isLoadingItems || isLoadingCategories || isPermissionLoading;
 
-  const error = itemsError || categoriesError;
+  const error = itemsError || categoriesError || permissionError;
 
   function handleGroupChange(nextGroup) {
     setGroup(nextGroup);
@@ -71,15 +69,19 @@ function Menu() {
   }
 
   function handleEdit(menuItem) {
+    if (!canManageMenu) return;
+
     setSelectedMenuItem(menuItem);
   }
 
   function handleToggleActive(menuItem) {
+    if (!canManageMenu) return;
+
     setMenuItemToToggle(menuItem);
   }
 
   function handleConfirmToggleActive() {
-    if (!menuItemToToggle) return;
+    if (!canManageMenu || !menuItemToToggle) return;
 
     const nextIsActive = !menuItemToToggle.is_active;
 
@@ -98,9 +100,7 @@ function Menu() {
     );
   }
 
-  if (isLoading) {
-    return <Spinner />;
-  }
+  if (isLoading) return <Spinner />;
 
   if (error) {
     return <ErrorMessage message={error.message} />;
@@ -109,21 +109,22 @@ function Menu() {
   return (
     <>
       <div className="space-y-6">
-        {/* Page header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="mt-1 text-xl text-gray-500">
-              Manage your restaurant menu.
+              {canManageMenu
+                ? "Manage your restaurant menu."
+                : "View your restaurant menu."}
             </p>
           </div>
 
-          <Button onClick={() => setIsCreating(true)}>Add menu item</Button>
+          {canManageMenu && (
+            <Button onClick={() => setIsCreating(true)}>Add menu item</Button>
+          )}
         </div>
 
-        {/* Menu statistics */}
         <MenuStats menuItems={menuItems} />
 
-        {/* Search and filters */}
         <MenuFilters
           search={search}
           group={group}
@@ -135,7 +136,6 @@ function Menu() {
           onStatusChange={setStatus}
         />
 
-        {/* Group and view controls */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <MenuGroupSwitcher
             categories={categories}
@@ -146,19 +146,18 @@ function Menu() {
           <ViewSwitcher value={view} onChange={setView} />
         </div>
 
-        {/* Menu list */}
         <MenuList
           menuItems={filteredMenuItems}
           categories={categories}
           group={group}
           view={view}
-          onEdit={handleEdit}
-          onToggleActive={handleToggleActive}
+          onEdit={canManageMenu ? handleEdit : undefined}
+          onToggleActive={canManageMenu ? handleToggleActive : undefined}
+          canManage={canManageMenu}
         />
       </div>
 
-      {/* Create menu item modal */}
-      {isCreating && (
+      {canManageMenu && isCreating && (
         <Modal onClose={() => setIsCreating(false)}>
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -174,8 +173,7 @@ function Menu() {
         </Modal>
       )}
 
-      {/* Edit menu item modal */}
-      {selectedMenuItem && (
+      {canManageMenu && selectedMenuItem && (
         <Modal
           onClose={() => {
             if (!isUpdating) {
@@ -198,8 +196,7 @@ function Menu() {
         </Modal>
       )}
 
-      {/* Deactivate / Reactivate confirmation */}
-      {menuItemToToggle && (
+      {canManageMenu && menuItemToToggle && (
         <Modal
           onClose={() => {
             if (!isUpdating) {

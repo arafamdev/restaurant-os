@@ -25,6 +25,10 @@ function useAuth() {
     queryClient.removeQueries({
       queryKey: ["current-user-context"],
     });
+
+    queryClient.removeQueries({
+      queryKey: ["has-permission"],
+    });
   }
 
   const user = session?.user ?? null;

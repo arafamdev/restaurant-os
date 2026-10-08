@@ -6,39 +6,57 @@ import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import ViewSwitcher from "../ui/ViewSwitcher";
 import useViewMode from "../hooks/useViewMode";
-
 import DailyMenuForm from "../features/dailyMenu/components/DailyMenuForm";
 import DailyMenuList from "../features/dailyMenu/components/DailyMenuList";
 import DailyMenuStatusModal from "../features/dailyMenu/components/DailyMenuStatusModal";
-
 import { useDeleteDailyMenu } from "../features/dailyMenu/hooks/useDeleteDailyMenu";
 import { useDailyMenus } from "../features/dailyMenu/hooks/useDailyMenus";
 import { useToggleDailyMenu } from "../features/dailyMenu/hooks/useToggleDailyMenu";
+import { useHasPermission } from "../features/auth/hooks/useHasPermission";
 
 function DailyMenu() {
   const [isCreating, setIsCreating] = useState(false);
   const [editingDailyMenu, setEditingDailyMenu] = useState(null);
   const [dailyMenuToToggle, setDailyMenuToToggle] = useState(null);
   const [deletingDailyMenu, setDeletingDailyMenu] = useState(null);
-
   const [view, setView] = useViewMode("daily-menu");
 
-  const { dailyMenus, isLoading, error } = useDailyMenus();
+  const {
+    dailyMenus,
+    isLoading: isLoadingDailyMenus,
+    error: dailyMenusError,
+  } = useDailyMenus();
 
   const { toggleDailyMenu, isToggling } = useToggleDailyMenu();
 
   const { deleteDailyMenu, isDeleting } = useDeleteDailyMenu();
 
+  const {
+    hasPermission: canManageMenu,
+    isLoading: isPermissionLoading,
+    error: permissionError,
+  } = useHasPermission("manage_menu");
+
   function handleToggleActive(dailyMenu) {
+    if (!canManageMenu) return;
+
     setDailyMenuToToggle(dailyMenu);
   }
 
   function handleDeleteDailyMenu(dailyMenu) {
+    if (!canManageMenu) return;
+
     setDeletingDailyMenu(dailyMenu);
   }
 
+  function handleEditDailyMenu(dailyMenu) {
+    if (!canManageMenu) return;
+
+    setEditingDailyMenu(dailyMenu);
+  }
+
   function handleConfirmToggle() {
-    if (!dailyMenuToToggle) return;
+    if (!canManageMenu || !dailyMenuToToggle) return;
 
     toggleDailyMenu(
       {
@@ -53,9 +71,11 @@ function DailyMenu() {
     );
   }
 
-  if (isLoading) {
-    return <Spinner />;
-  }
+  const isLoading = isLoadingDailyMenus || isPermissionLoading;
+
+  const error = dailyMenusError || permissionError;
+
+  if (isLoading) return <Spinner />;
 
   if (error) {
     return <ErrorMessage message={error.message} />;
@@ -64,36 +84,39 @@ function DailyMenu() {
   return (
     <>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Daily Menu</h1>
 
             <p className="mt-1 text-sm text-gray-500">
-              Manage your daily menu offers.
+              {canManageMenu
+                ? "Manage your daily menu offers."
+                : "View your daily menu offers."}
             </p>
           </div>
 
-          <Button onClick={() => setIsCreating(true)}>Create daily menu</Button>
+          {canManageMenu && (
+            <Button onClick={() => setIsCreating(true)}>
+              Create daily menu
+            </Button>
+          )}
         </div>
 
-        {/* View controls */}
         <div className="flex justify-end">
           <ViewSwitcher value={view} onChange={setView} />
         </div>
 
-        {/* Daily menus */}
         <DailyMenuList
           dailyMenus={dailyMenus}
           view={view}
-          onEdit={(dailyMenu) => setEditingDailyMenu(dailyMenu)}
-          onToggleActive={handleToggleActive}
-          onDelete={handleDeleteDailyMenu}
+          onEdit={canManageMenu ? handleEditDailyMenu : undefined}
+          onToggleActive={canManageMenu ? handleToggleActive : undefined}
+          onDelete={canManageMenu ? handleDeleteDailyMenu : undefined}
+          canManage={canManageMenu}
         />
       </div>
 
-      {/* Create modal */}
-      {isCreating && (
+      {canManageMenu && isCreating && (
         <Modal onClose={() => setIsCreating(false)}>
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -109,8 +132,7 @@ function DailyMenu() {
         </Modal>
       )}
 
-      {/* Edit modal */}
-      {editingDailyMenu && (
+      {canManageMenu && editingDailyMenu && (
         <Modal onClose={() => setEditingDailyMenu(null)}>
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -129,8 +151,7 @@ function DailyMenu() {
         </Modal>
       )}
 
-      {/* Delete modal */}
-      {deletingDailyMenu && (
+      {canManageMenu && deletingDailyMenu && (
         <Modal
           onClose={() => {
             if (!isDeleting) {
@@ -181,8 +202,7 @@ function DailyMenu() {
         </Modal>
       )}
 
-      {/* Activate / deactivate confirmation */}
-      {dailyMenuToToggle && (
+      {canManageMenu && dailyMenuToToggle && (
         <DailyMenuStatusModal
           dailyMenu={dailyMenuToToggle}
           onClose={() => setDailyMenuToToggle(null)}

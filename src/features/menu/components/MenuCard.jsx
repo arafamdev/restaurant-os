@@ -98,7 +98,13 @@ function AttributeBadges({ dietaryAttributes = [], allergens = [] }) {
   );
 }
 
-function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
+function MenuCard({
+  menuItem,
+  view = "compact",
+  onEdit,
+  onToggleActive,
+  canManage = false,
+}) {
   const navigate = useNavigate();
 
   const {
@@ -113,8 +119,6 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
     dietaryAttributes = [],
     allergens = [],
   } = menuItem;
-
-  const isAvailable = is_active && is_available;
 
   const status = !is_active
     ? "Inactive"
@@ -150,6 +154,7 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusStyles[status]}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${statusDotStyles[status]}`} />
+
       {status}
     </span>
   );
@@ -167,11 +172,17 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
 
   function handleEdit(event) {
     event.stopPropagation();
+
+    if (!canManage || !onEdit) return;
+
     onEdit(menuItem);
   }
 
   function handleToggleActive(event) {
     event.stopPropagation();
+
+    if (!canManage || !onToggleActive) return;
+
     onToggleActive(menuItem);
   }
 
@@ -213,7 +224,6 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
         {/* CATEGORY */}
         <div className="flex items-center gap-2 text-gray-600">
           <HiOutlineTag className="h-4 w-4 shrink-0 text-gray-400" />
-
           <span className="text-sm">{categoryName}</span>
         </div>
 
@@ -234,25 +244,27 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
         <div>{statusBadge}</div>
 
         {/* ACTIONS */}
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            size="small"
-            variation="secondary"
-            onClick={handleEdit}
-          >
-            Edit
-          </Button>
+        {canManage && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="small"
+              variation="secondary"
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
 
-          <Button
-            type="button"
-            size="small"
-            variation={is_active ? "danger" : "secondary"}
-            onClick={handleToggleActive}
-          >
-            {is_active ? "Deactivate" : "Reactivate"}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              size="small"
+              variation={is_active ? "danger" : "secondary"}
+              onClick={handleToggleActive}
+            >
+              {is_active ? "Deactivate" : "Reactivate"}
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
@@ -304,7 +316,6 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
             {/* CATEGORY */}
             <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
               <HiOutlineTag className="h-4 w-4 shrink-0 text-gray-400" />
-
               <span className="truncate">{categoryName}</span>
             </div>
 
@@ -329,25 +340,27 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
                 €{Number(price).toFixed(2)}
               </span>
 
-              <div className="flex gap-1.5">
-                <Button
-                  type="button"
-                  size="small"
-                  variation="secondary"
-                  onClick={handleEdit}
-                >
-                  Edit
-                </Button>
+              {canManage && (
+                <div className="flex gap-1.5">
+                  <Button
+                    type="button"
+                    size="small"
+                    variation="secondary"
+                    onClick={handleEdit}
+                  >
+                    Edit
+                  </Button>
 
-                <Button
-                  type="button"
-                  size="small"
-                  variation={is_active ? "danger" : "secondary"}
-                  onClick={handleToggleActive}
-                >
-                  {is_active ? "Deactivate" : "Reactivate"}
-                </Button>
-              </div>
+                  <Button
+                    type="button"
+                    size="small"
+                    variation={is_active ? "danger" : "secondary"}
+                    onClick={handleToggleActive}
+                  >
+                    {is_active ? "Deactivate" : "Reactivate"}
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -412,7 +425,6 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
       <div className="mt-5 space-y-2.5 border-t border-gray-100 pt-4">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <HiOutlineTag className="h-4 w-4 shrink-0 text-gray-400" />
-
           <span className="truncate">{categoryName}</span>
         </div>
 
@@ -433,25 +445,27 @@ function MenuCard({ menuItem, view = "compact", onEdit, onToggleActive }) {
 
       {/* FOOTER */}
       <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            size="small"
-            variation="secondary"
-            onClick={handleEdit}
-          >
-            Edit
-          </Button>
+        {canManage && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="small"
+              variation="secondary"
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
 
-          <Button
-            type="button"
-            size="small"
-            variation={is_active ? "danger" : "secondary"}
-            onClick={handleToggleActive}
-          >
-            {is_active ? "Deactivate" : "Reactivate"}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              size="small"
+              variation={is_active ? "danger" : "secondary"}
+              onClick={handleToggleActive}
+            >
+              {is_active ? "Deactivate" : "Reactivate"}
+            </Button>
+          </div>
+        )}
 
         <HiOutlineArrowRight className="h-4 w-4 text-gray-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-700" />
       </div>

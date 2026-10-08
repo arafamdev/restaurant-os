@@ -4,7 +4,15 @@ import { supabase } from "../../../services/supabase";
 export async function getTables() {
   const { data, error } = await supabase
     .from("tables")
-    .select("*")
+    .select(
+      `
+      *,
+      restaurants (
+        id,
+        name
+      )
+    `,
+    )
     .order("table_number");
 
   if (error) {
@@ -31,9 +39,34 @@ export async function getTable(id) {
 
 // CREATE A TABLE
 export async function createTable(newTable) {
+  let restaurantId = newTable.restaurant_id;
+
+  // Utilizadores normais não precisam de indicar o restaurante.
+  // O restaurante é determinado pelo contexto do utilizador autenticado.
+  if (!restaurantId) {
+    const { data, error } = await supabase.rpc(
+      "get_current_user_restaurant_id",
+    );
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    restaurantId = data;
+  }
+
+  if (!restaurantId) {
+    throw new Error("Could not determine the current restaurant.");
+  }
+
   const { data, error } = await supabase
     .from("tables")
-    .insert([newTable])
+    .insert([
+      {
+        ...newTable,
+        restaurant_id: restaurantId,
+      },
+    ])
     .select()
     .single();
 
