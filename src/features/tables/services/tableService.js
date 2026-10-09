@@ -1,8 +1,8 @@
 import { supabase } from "../../../services/supabase";
 
 // READ ALL TABLES
-export async function getTables() {
-  const { data, error } = await supabase
+export async function getTables(restaurantId) {
+  let query = supabase
     .from("tables")
     .select(
       `
@@ -14,6 +14,13 @@ export async function getTables() {
     `,
     )
     .order("table_number");
+
+  // "all" means that the Platform Admin wants all restaurants.
+  if (restaurantId !== "all") {
+    query = query.eq("restaurant_id", restaurantId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);

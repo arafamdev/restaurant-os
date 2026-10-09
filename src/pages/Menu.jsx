@@ -6,16 +6,20 @@ import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import ViewSwitcher from "../ui/ViewSwitcher";
 import useViewMode from "../hooks/useViewMode";
+
 import { useMenuItems } from "../features/menu/hooks/useMenuItems";
 import { useMenuCategories } from "../features/menu/hooks/useMenuCategories";
 import { useUpdateMenuItem } from "../features/menu/hooks/useUpdateMenuItem";
 import useMenuFilters from "../features/menu/hooks/useMenuFilters";
+
 import MenuFilters from "../features/menu/components/MenuFilters";
 import MenuGroupSwitcher from "../features/menu/components/MenuGroupSwitcher";
 import MenuList from "../features/menu/components/MenuList";
 import MenuItemForm from "../features/menu/components/MenuItemForm";
 import MenuStats from "../features/menu/components/MenuStats";
+
 import { useHasPermission } from "../features/auth/hooks/useHasPermission";
+import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
 
 function Menu() {
   const [group, setGroup] = useState("all");
@@ -23,6 +27,7 @@ function Menu() {
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
   const [view, setView] = useViewMode("menu");
+
   const [isCreating, setIsCreating] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const [menuItemToToggle, setMenuItemToToggle] = useState(null);
@@ -42,10 +47,20 @@ function Menu() {
   const { updateItem, isUpdating } = useUpdateMenuItem();
 
   const {
-    hasPermission: canManageMenu,
+    hasPermission,
     isLoading: isPermissionLoading,
     error: permissionError,
   } = useHasPermission("manage_menu");
+
+  const {
+    userContext,
+    isLoading: isUserContextLoading,
+    error: userContextError,
+  } = useCurrentUserContext();
+
+  const isPlatformAdmin = Boolean(userContext?.is_platform_admin);
+
+  const canManageMenu = isPlatformAdmin || hasPermission;
 
   const { filteredMenuItems } = useMenuFilters({
     menuItems,
@@ -56,15 +71,18 @@ function Menu() {
   });
 
   const isLoading =
-    isLoadingItems || isLoadingCategories || isPermissionLoading;
+    isLoadingItems ||
+    isLoadingCategories ||
+    isPermissionLoading ||
+    isUserContextLoading;
 
-  const error = itemsError || categoriesError || permissionError;
+  const error =
+    itemsError || categoriesError || permissionError || userContextError;
 
   function handleGroupChange(nextGroup) {
     setGroup(nextGroup);
 
-    // A categoria selecionada pode pertencer
-    // ao grupo anterior.
+    // A categoria selecionada pode pertencer ao grupo anterior.
     setCategoryId("all");
   }
 
@@ -100,7 +118,9 @@ function Menu() {
     );
   }
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   if (error) {
     return <ErrorMessage message={error.message} />;
@@ -109,6 +129,7 @@ function Menu() {
   return (
     <>
       <div className="space-y-6">
+        {/* PAGE HEADER */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="mt-1 text-xl text-gray-500">
@@ -123,8 +144,10 @@ function Menu() {
           )}
         </div>
 
+        {/* STATS */}
         <MenuStats menuItems={menuItems} />
 
+        {/* FILTERS */}
         <MenuFilters
           search={search}
           group={group}
@@ -136,6 +159,7 @@ function Menu() {
           onStatusChange={setStatus}
         />
 
+        {/* VIEW CONTROLS */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <MenuGroupSwitcher
             categories={categories}
@@ -146,6 +170,7 @@ function Menu() {
           <ViewSwitcher value={view} onChange={setView} />
         </div>
 
+        {/* MENU LIST */}
         <MenuList
           menuItems={filteredMenuItems}
           categories={categories}
@@ -157,6 +182,7 @@ function Menu() {
         />
       </div>
 
+      {/* CREATE MENU ITEM */}
       {canManageMenu && isCreating && (
         <Modal onClose={() => setIsCreating(false)}>
           <div className="mb-6">
@@ -173,6 +199,7 @@ function Menu() {
         </Modal>
       )}
 
+      {/* EDIT MENU ITEM */}
       {canManageMenu && selectedMenuItem && (
         <Modal
           onClose={() => {
@@ -196,6 +223,7 @@ function Menu() {
         </Modal>
       )}
 
+      {/* TOGGLE ACTIVE */}
       {canManageMenu && menuItemToToggle && (
         <Modal
           onClose={() => {

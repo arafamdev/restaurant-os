@@ -6,12 +6,16 @@ import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import ViewSwitcher from "../ui/ViewSwitcher";
 import useViewMode from "../hooks/useViewMode";
+
 import DailyMenuForm from "../features/dailyMenu/components/DailyMenuForm";
 import DailyMenuList from "../features/dailyMenu/components/DailyMenuList";
 import DailyMenuStatusModal from "../features/dailyMenu/components/DailyMenuStatusModal";
+
 import { useDeleteDailyMenu } from "../features/dailyMenu/hooks/useDeleteDailyMenu";
 import { useDailyMenus } from "../features/dailyMenu/hooks/useDailyMenus";
 import { useToggleDailyMenu } from "../features/dailyMenu/hooks/useToggleDailyMenu";
+
+import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
 import { useHasPermission } from "../features/auth/hooks/useHasPermission";
 
 function DailyMenu() {
@@ -19,6 +23,7 @@ function DailyMenu() {
   const [editingDailyMenu, setEditingDailyMenu] = useState(null);
   const [dailyMenuToToggle, setDailyMenuToToggle] = useState(null);
   const [deletingDailyMenu, setDeletingDailyMenu] = useState(null);
+
   const [view, setView] = useViewMode("daily-menu");
 
   const {
@@ -31,11 +36,17 @@ function DailyMenu() {
 
   const { deleteDailyMenu, isDeleting } = useDeleteDailyMenu();
 
+  const { userContext, isLoading: isUserLoading } = useCurrentUserContext();
+
   const {
-    hasPermission: canManageMenu,
+    hasPermission,
     isLoading: isPermissionLoading,
     error: permissionError,
   } = useHasPermission("manage_menu");
+
+  const isPlatformAdmin = Boolean(userContext?.is_platform_admin);
+
+  const canManageMenu = isPlatformAdmin || hasPermission;
 
   function handleToggleActive(dailyMenu) {
     if (!canManageMenu) return;
@@ -71,11 +82,13 @@ function DailyMenu() {
     );
   }
 
-  const isLoading = isLoadingDailyMenus || isPermissionLoading;
+  const isLoading = isLoadingDailyMenus || isPermissionLoading || isUserLoading;
 
   const error = dailyMenusError || permissionError;
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   if (error) {
     return <ErrorMessage message={error.message} />;
@@ -84,6 +97,8 @@ function DailyMenu() {
   return (
     <>
       <div className="space-y-6">
+        {/* Header */}
+
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Daily Menu</h1>
@@ -102,9 +117,13 @@ function DailyMenu() {
           )}
         </div>
 
+        {/* View */}
+
         <div className="flex justify-end">
           <ViewSwitcher value={view} onChange={setView} />
         </div>
+
+        {/* List */}
 
         <DailyMenuList
           dailyMenus={dailyMenus}
@@ -115,6 +134,8 @@ function DailyMenu() {
           canManage={canManageMenu}
         />
       </div>
+
+      {/* Create */}
 
       {canManageMenu && isCreating && (
         <Modal onClose={() => setIsCreating(false)}>
@@ -131,6 +152,8 @@ function DailyMenu() {
           <DailyMenuForm onCloseModal={() => setIsCreating(false)} />
         </Modal>
       )}
+
+      {/* Edit */}
 
       {canManageMenu && editingDailyMenu && (
         <Modal onClose={() => setEditingDailyMenu(null)}>
@@ -150,6 +173,8 @@ function DailyMenu() {
           />
         </Modal>
       )}
+
+      {/* Delete */}
 
       {canManageMenu && deletingDailyMenu && (
         <Modal
@@ -201,6 +226,8 @@ function DailyMenu() {
           </div>
         </Modal>
       )}
+
+      {/* Toggle status */}
 
       {canManageMenu && dailyMenuToToggle && (
         <DailyMenuStatusModal

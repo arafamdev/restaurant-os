@@ -1,8 +1,8 @@
 import { supabase } from "../../../services/supabase";
 
 // GET ALL EMPLOYEES
-export async function getEmployees() {
-  const { data, error } = await supabase
+export async function getEmployees(restaurantId) {
+  let query = supabase
     .from("employees")
     .select(
       `
@@ -10,13 +10,25 @@ export async function getEmployees() {
       full_name,
       phone,
       status,
+      restaurant_id,
       roles (
+        id,
+        name
+      ),
+      restaurants (
         id,
         name
       )
     `,
     )
     .order("full_name");
+
+  // "all" means that the Platform Admin wants all restaurants.
+  if (restaurantId !== "all") {
+    query = query.eq("restaurant_id", restaurantId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);

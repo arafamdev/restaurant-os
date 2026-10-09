@@ -30,13 +30,28 @@ function getMenuItemsByComponent(menuItems, componentType) {
   );
 }
 
-function DailyMenuOptionsField({ control, fields, append, remove, menuType }) {
-  const { menuItems, isLoading } = useMenuItems();
+function DailyMenuOptionsField({
+  control,
+  fields,
+  append,
+  remove,
+  menuType,
+  restaurantId,
+}) {
+  const { menuItems, isLoading } = useMenuItems(restaurantId);
 
   const selectedOptions = useWatch({
     control,
     name: "options",
   });
+
+  if (!restaurantId) {
+    return (
+      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+        Select a restaurant first to load its menu items.
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <p className="text-sm text-gray-500">Loading menu items...</p>;
@@ -45,7 +60,7 @@ function DailyMenuOptionsField({ control, fields, append, remove, menuType }) {
   if (menuItems.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
-        No menu items found.
+        No menu items found for this restaurant.
       </div>
     );
   }
@@ -99,8 +114,6 @@ function DailyMenuOptionsField({ control, fields, append, remove, menuType }) {
             key={componentType}
             className="rounded-xl border border-gray-200 bg-gray-50 p-4"
           >
-            {/* Component header */}
-
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h4 className="font-semibold text-gray-900">
@@ -122,8 +135,6 @@ function DailyMenuOptionsField({ control, fields, append, remove, menuType }) {
                 Add
               </Button>
             </div>
-
-            {/* Options */}
 
             <div className="mt-4 space-y-3">
               {componentOptions.length === 0 && (

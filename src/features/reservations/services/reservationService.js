@@ -1,7 +1,7 @@
 import { supabase } from "../../../services/supabase";
 
-export async function getReservations() {
-  const { data, error } = await supabase
+export async function getReservations(restaurantId) {
+  let query = supabase
     .from("reservations")
     .select(
       `
@@ -15,12 +15,25 @@ export async function getReservations() {
         table_number,
         capacity,
         location
+      ),
+      restaurants (
+        id,
+        name
       )
     `,
     )
     .order("starts_at");
 
-  if (error) throw new Error(error.message);
+  // "all" means that the Platform Admin wants all restaurants.
+  if (restaurantId !== "all") {
+    query = query.eq("restaurant_id", restaurantId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(error.message);
+  }
 
   return data;
 }

@@ -28,8 +28,8 @@ function normalizeMenuItem(item) {
 }
 
 // Buscar todos os itens do menu
-export async function getMenuItems() {
-  const { data, error } = await supabase
+export async function getMenuItems(restaurantId) {
+  let query = supabase
     .from("menu_items")
     .select(
       `
@@ -41,14 +41,17 @@ export async function getMenuItems() {
       is_active,
       is_available,
       category_id,
-
+      restaurant_id,
+      restaurants (
+        id,
+        name
+      ),
       menu_categories (
         id,
         name,
         display_order,
         group_type
       ),
-
       menu_item_dietary_attributes (
         dietary_attributes (
           id,
@@ -58,7 +61,6 @@ export async function getMenuItems() {
           display_order
         )
       ),
-
       menu_item_allergens (
         allergens (
           id,
@@ -71,6 +73,13 @@ export async function getMenuItems() {
     `,
     )
     .order("name");
+
+  // "all" means that the Platform Admin wants all restaurants.
+  if (restaurantId !== "all") {
+    query = query.eq("restaurant_id", restaurantId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -93,7 +102,11 @@ export async function getMenuItemById(id) {
       is_active,
       is_available,
       category_id,
-
+      restaurant_id,
+      restaurants (
+        id,
+        name
+      ),
       menu_categories (
         id,
         name,
@@ -101,7 +114,6 @@ export async function getMenuItemById(id) {
         display_order,
         group_type
       ),
-
       menu_item_dietary_attributes (
         dietary_attributes (
           id,
@@ -111,7 +123,6 @@ export async function getMenuItemById(id) {
           display_order
         )
       ),
-
       menu_item_allergens (
         allergens (
           id,
@@ -169,8 +180,8 @@ export async function updateMenuItem(id, updatedMenuItem) {
 // ==================================================
 
 // Buscar todas as categorias do menu
-export async function getMenuCategories() {
-  const { data, error } = await supabase
+export async function getMenuCategories(restaurantId) {
+  let query = supabase
     .from("menu_categories")
     .select(
       `
@@ -179,10 +190,22 @@ export async function getMenuCategories() {
       description,
       display_order,
       is_active,
-      group_type
+      group_type,
+      restaurant_id,
+      restaurants (
+        id,
+        name
+      )
     `,
     )
     .order("display_order");
+
+  // "all" means that the Platform Admin wants all restaurants.
+  if (restaurantId !== "all") {
+    query = query.eq("restaurant_id", restaurantId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);

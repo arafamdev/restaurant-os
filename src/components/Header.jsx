@@ -1,12 +1,8 @@
 import { useLocation } from "react-router-dom";
-
-import {
-  HiOutlineBell,
-  HiOutlineMoon,
-  HiOutlineBars3,
-} from "react-icons/hi2";
-
+import { HiOutlineBell, HiOutlineMoon, HiOutlineBars3 } from "react-icons/hi2";
+import { useRestaurantContext } from "../context/useRestaurantContext";
 import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
+import RestaurantSelector from "../features/restaurants/components/RestaurantSelector";
 import ProfileMenu from "../features/profile/components/ProfileMenu";
 
 const pageTitles = {
@@ -25,16 +21,23 @@ const pageTitles = {
 function Header({ onMenuClick }) {
   const location = useLocation();
 
+  const { userContext, isLoading: isUserLoading } = useCurrentUserContext();
+
   const {
-    userContext,
-    isLoading,
-  } = useCurrentUserContext();
+    isAllRestaurants,
+    selectedRestaurant,
+    isLoading: isRestaurantLoading,
+  } = useRestaurantContext();
 
-  const pageTitle =
-    pageTitles[location.pathname] || "RestaurantOS";
+  const pageTitle = pageTitles[location.pathname] || "RestaurantOS";
 
-  const restaurantName =
-    userContext?.restaurant_name || "RestaurantOS";
+  const restaurantName = isAllRestaurants
+    ? "All Restaurants"
+    : selectedRestaurant?.name ||
+      userContext?.restaurant_name ||
+      "RestaurantOS";
+
+  const isLoading = isUserLoading || isRestaurantLoading;
 
   return (
     <header className="sticky top-0 z-30 h-20 border-b border-gray-200/70 bg-white/90 backdrop-blur-xl">
@@ -52,12 +55,10 @@ function Header({ onMenuClick }) {
           </button>
 
           <div className="min-w-0">
-            {/* Restaurant */}
+            {/* Restaurant context */}
             <div className="flex items-center gap-2">
               <span className="truncate text-xs font-medium text-gray-400">
-                {isLoading
-                  ? "Loading..."
-                  : restaurantName}
+                {isLoading ? "Loading..." : restaurantName}
               </span>
 
               {!isLoading && (
@@ -78,6 +79,9 @@ function Header({ onMenuClick }) {
 
         {/* Right */}
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          {/* Restaurant context selector */}
+          <RestaurantSelector />
+
           {/* Notifications */}
           <button
             type="button"

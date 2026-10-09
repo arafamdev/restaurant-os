@@ -4,8 +4,11 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Global context
+import { RestaurantProvider } from "./context/RestaurantContext";
+
 // Public pages
-import AcceptInvite from "./features/auth/AcceptInvite";
+import AcceptInvite from "./features/auth/components/AcceptInvite";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
@@ -48,23 +51,23 @@ function App() {
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
-          <Route element={<AppLayout />}>
+          <Route
+            element={
+              <RestaurantProvider>
+                <AppLayout />
+              </RestaurantProvider>
+            }
+          >
             {/* Main */}
             <Route path="/dashboard" element={<Dashboard />} />
-
             <Route path="/restaurant-day" element={<RestaurantDay />} />
-
             <Route path="/staff" element={<Staff />} />
-
             <Route path="/staff/:employeeId" element={<EmployeeDetails />} />
-
             <Route path="/profile" element={<Profile />} />
 
             {/* Reservations */}
             <Route path="/reservations" element={<Reservations />} />
-
             <Route path="/reservations/new" element={<NewReservation />} />
-
             <Route
               path="/reservations/:reservationId"
               element={<ReservationDetails />}
@@ -72,18 +75,13 @@ function App() {
 
             {/* Tables */}
             <Route path="/tables" element={<Tables />} />
-
             <Route path="/tables/new" element={<CreateTable />} />
-
             <Route path="/tables/:tableId" element={<TableDetails />} />
-
             <Route path="/tables/:tableId/edit" element={<EditTable />} />
 
             {/* Menu */}
             <Route path="/menu" element={<Menu />} />
-
             <Route path="/menu/:menuItemId" element={<MenuItemDetails />} />
-
             <Route path="/daily-menu" element={<DailyMenu />} />
 
             {/* Customers */}

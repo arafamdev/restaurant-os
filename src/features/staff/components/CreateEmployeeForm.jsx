@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import toast from "react-hot-toast";
 
 import Button from "../../../ui/Button";
 import Input from "../../../ui/Input";
 import Select from "../../../ui/Select";
+
+import { useRestaurantContext } from "../../../context/useRestaurantContext";
 
 import { useCreateEmployee } from "../hooks/useCreateEmployee";
 import { useRestaurants } from "../hooks/useRestaurants";
@@ -16,7 +19,9 @@ function CreateEmployeeForm({ onClose, userContext }) {
   const [roleId, setRoleId] = useState("");
   const [restaurantId, setRestaurantId] = useState("");
 
-  const isPlatformAdmin = userContext?.is_platform_admin;
+  const { restaurantId: contextRestaurantId, isPlatformAdmin } =
+    useRestaurantContext();
+
   const isManager = userContext?.role_name === "manager";
 
   const { roles, isLoading: isLoadingRoles, error: rolesError } = useRoles();
@@ -25,7 +30,7 @@ function CreateEmployeeForm({ onClose, userContext }) {
     restaurants,
     isLoading: isLoadingRestaurants,
     error: restaurantsError,
-  } = useRestaurants(isPlatformAdmin);
+  } = useRestaurants();
 
   const { createEmployee, isPending, error } = useCreateEmployee();
 
@@ -34,10 +39,37 @@ function CreateEmployeeForm({ onClose, userContext }) {
   // Usar o primeiro role disponível como valor inicial.
   const selectedRoleId = roleId || roles?.[0]?.id || "";
 
-  // Platform Admin pode escolher qualquer restaurante.
-  // Manager utiliza automaticamente o seu próprio restaurante.
+  /*
+   * Quando o Platform Admin muda o Restaurant Context,
+   * sincronizamos o restaurante selecionado no formulário.
+   *
+   * "all" significa que nenhum restaurante específico
+   * foi escolhido no contexto global.
+   */
+  useEffect(() => {
+    if (!isPlatformAdmin) {
+      return;
+    }
+
+    if (contextRestaurantId === "all") {
+      setRestaurantId("");
+      return;
+    }
+
+    setRestaurantId(contextRestaurantId);
+  }, [contextRestaurantId, isPlatformAdmin]);
+
+  /*
+   * Platform Admin:
+   * - "all" → precisa escolher um restaurante.
+   * - restaurante específico → usa esse restaurante como valor inicial,
+   *   mas pode escolher outro.
+   *
+   * Manager:
+   * - utiliza sempre o restaurante do próprio utilizador.
+   */
   const selectedRestaurantId = isPlatformAdmin
-    ? restaurantId || restaurants?.[0]?.id || ""
+    ? restaurantId
     : userContext?.restaurant_id || "";
 
   const roleOptions =
@@ -164,7 +196,13 @@ function CreateEmployeeForm({ onClose, userContext }) {
           <Select
             value={selectedRestaurantId}
             onChange={setRestaurantId}
-            options={restaurantOptions}
+            options={[
+              {
+                value: "",
+                label: "Select a restaurant",
+              },
+              ...restaurantOptions,
+            ]}
           />
         </div>
       )}

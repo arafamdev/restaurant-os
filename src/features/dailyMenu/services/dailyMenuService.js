@@ -1,8 +1,8 @@
 import { supabase } from "../../../services/supabase";
 
-// DAILY MENUS
-export async function getDailyMenus() {
-  const { data, error } = await supabase
+// Buscar todos os daily menus
+export async function getDailyMenus(restaurantId) {
+  let query = supabase
     .from("daily_menus")
     .select(
       `
@@ -23,6 +23,11 @@ export async function getDailyMenus() {
       include_bread,
       include_coffee,
       is_active,
+      restaurant_id,
+      restaurants (
+        id,
+        name
+      ),
       created_at,
       updated_at
     `,
@@ -30,6 +35,13 @@ export async function getDailyMenus() {
     .order("created_at", {
       ascending: false,
     });
+
+  // "all" significa que o Platform Admin quer visualizar todos os restaurantes.
+  if (restaurantId !== "all") {
+    query = query.eq("restaurant_id", restaurantId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -93,6 +105,11 @@ export async function getDailyMenuById(id) {
       include_bread,
       include_coffee,
       is_active,
+      restaurant_id,
+      restaurants (
+        id,
+        name
+      ),
       created_at,
       updated_at,
       daily_menu_options (
@@ -122,17 +139,16 @@ export async function getDailyMenuById(id) {
   return data;
 }
 
-// CREATE DAILY MENU
+// Criar um novo Daily Menu
 export async function createDailyMenu(newDailyMenu) {
   const { data, error } = await supabase.rpc("create_daily_menu", {
+    p_restaurant_id: Number(newDailyMenu.restaurant_id),
     p_name: newDailyMenu.name,
     p_description: newDailyMenu.description || null,
     p_menu_type: newDailyMenu.menu_type,
     p_price: Number(newDailyMenu.price),
-
     p_start_time: newDailyMenu.start_time,
     p_end_time: newDailyMenu.end_time,
-
     p_monday: newDailyMenu.monday,
     p_tuesday: newDailyMenu.tuesday,
     p_wednesday: newDailyMenu.wednesday,
@@ -140,10 +156,8 @@ export async function createDailyMenu(newDailyMenu) {
     p_friday: newDailyMenu.friday,
     p_saturday: newDailyMenu.saturday,
     p_sunday: newDailyMenu.sunday,
-
     p_include_bread: newDailyMenu.include_bread,
     p_include_coffee: newDailyMenu.include_coffee,
-
     p_options: newDailyMenu.options,
   });
 
@@ -226,10 +240,7 @@ export async function updateDailyMenuStatus(id, isActive) {
 
 // DELETE DAILY MENU
 export async function deleteDailyMenu(id) {
-  const { error } = await supabase
-    .from("daily_menus")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("daily_menus").delete().eq("id", id);
 
   if (error) {
     throw new Error(error.message);

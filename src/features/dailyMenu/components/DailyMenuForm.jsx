@@ -1,12 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 
 import toast from "react-hot-toast";
 
+import { useRestaurantContext } from "../../../context/useRestaurantContext";
 import Button from "../../../ui/Button";
 import Input from "../../../ui/Input";
 import Select from "../../../ui/Select";
+
+import { useCurrentUserContext } from "../../auth/hooks/useCurrentUserContext";
+import { useRestaurants } from "../../restaurants/hooks/useRestaurants";
 
 import { useCreateDailyMenu } from "../hooks/useCreateDailyMenu";
 import { useDailyMenu } from "../hooks/useDailyMenu";
@@ -132,9 +136,7 @@ function validateMenuOptions(menuType, options) {
   const componentTypes = selectedOptions.map((option) => option.component_type);
 
   const hasStarter = componentTypes.includes("starter");
-
   const hasMain = componentTypes.includes("main");
-
   const hasDessert = componentTypes.includes("dessert");
 
   if (!hasStarter) {
@@ -153,6 +155,18 @@ function validateMenuOptions(menuType, options) {
 }
 
 function DailyMenuForm({ dailyMenu, onCloseModal }) {
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState("");
+
+  const {
+    restaurantId: contextRestaurantId,
+    isAllRestaurants,
+    isPlatformAdmin,
+  } = useRestaurantContext();
+
+  const { userContext } = useCurrentUserContext();
+
+  const { restaurants = [] } = useRestaurants();
+
   const {
     register,
     handleSubmit,
@@ -191,46 +205,31 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
 
   const isSaving = isCreating || isUpdating;
 
-  function onSubmit(data) {
-    const hasSelectedDay = selectedDays.some(Boolean);
+  const effectiveRestaurantId = isEditing
+    ? fullDailyMenu?.restaurant_id
+    : isPlatformAdmin
+      ? isAllRestaurants
+        ? selectedRestaurantId
+        : contextRestaurantId
+      : userContext?.restaurant_id;
 
-    if (!hasSelectedDay) {
-      toast.error("Select at least one day.");
+  useEffect(() => {
+    if (isEditing) return;
+
+    if (isPlatformAdmin && isAllRestaurants) {
+      setSelectedRestaurantId("");
       return;
     }
 
-    const optionsError = validateMenuOptions(data.menu_type, data.options);
-
-    if (optionsError !== true) {
-      toast.error(optionsError);
-      return;
+    if (contextRestaurantId) {
+      setSelectedRestaurantId(String(contextRestaurantId));
     }
-
-    if (isEditing) {
-      updateDailyMenu(
-        {
-          id: dailyMenu.id,
-          ...data,
-        },
-        {
-          onSuccess: () => {
-            onCloseModal();
-          },
-        },
-      );
-
-      return;
-    }
-
-    createDailyMenu(data, {
-      onSuccess: () => {
-        onCloseModal();
-      },
-    });
-  }
+  }, [isEditing, isPlatformAdmin, isAllRestaurants, contextRestaurantId]);
 
   useEffect(() => {
     if (!fullDailyMenu) return;
+
+    setSelectedRestaurantId(String(fullDailyMenu.restaurant_id));
 
     reset({
       name: fullDailyMenu.name,
@@ -265,15 +264,95 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
 
       options: fullDailyMenu.daily_menu_options.map((option) => ({
         component_type: option.component_type,
-
         menu_item_id: String(option.menu_item_id),
       })),
     });
   }, [fullDailyMenu, reset]);
 
+  function handleRestaurantChange(value) {
+    setSelectedRestaurantId(value);
+
+    // Os menu items pertencem ao restaurante selecionado.
+    // Limpamos as opções para evitar misturar restaurantes.
+    replace(simpleMenuOptions);
+  }
+
+  function handleMenuTypeChange(value) {
+    if (value === "executive") {
+      replace(executiveMenuOptions);
+      return;
+    }
+
+    replace(simpleMenuOptions);
+  }
+
+  function onSubmit(data) {
+    const hasSelectedDay = selectedDays.some(Boolean);
+
+    if (!hasSelectedDay) {
+      toast.error("Select at least one day.");
+      return;
+    }
+
+    if (!effectiveRestaurantId) {
+      toast.error("Select a restaurant.");
+      return;
+    }
+
+    const optionsError = validateMenuOptions(data.menu_type, data.options);
+
+    if (optionsError !== true) {
+      toast.error(optionsError);
+      return;
+    }
+
+    if (isEditing) {
+      updateDailyMenu(
+        {
+          id: dailyMenu.id,
+          ...data,
+        },
+        {
+          onSuccess: () => {
+            onCloseModal();
+          },
+        },
+      );
+
+      return;
+    }
+
+    createDailyMenu(
+      {
+        ...data,
+        restaurant_id: Number(effectiveRestaurantId),
+      },
+      {
+        onSuccess: () => {
+          onCloseModal();
+        },
+      },
+    );
+  }
+
   if (dailyMenu && isLoading) {
     return <p className="text-sm text-gray-500">Loading daily menu...</p>;
   }
+
+  const restaurantOptions = [
+    {
+      value: "",
+      label: "Select a restaurant",
+    },
+    ...restaurants.map((restaurant) => ({
+      value: String(restaurant.id),
+      label: restaurant.name,
+    })),
+  ];
+
+  const selectedRestaurant = restaurants.find(
+    (restaurant) => Number(restaurant.id) === Number(effectiveRestaurantId),
+  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -285,6 +364,35 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
         </h3>
 
         <div className="mt-4 space-y-4">
+          {/* Restaurant */}
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              Restaurant
+            </label>
+
+            {isEditing ? (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700">
+                {selectedRestaurant?.name ||
+                  fullDailyMenu?.restaurants?.name ||
+                  "Restaurant"}
+              </div>
+            ) : (
+              <Select
+                value={String(effectiveRestaurantId || "")}
+                onChange={handleRestaurantChange}
+                options={restaurantOptions}
+                disabled={!isPlatformAdmin || !isAllRestaurants}
+              />
+            )}
+
+            {!effectiveRestaurantId && (
+              <p className="mt-1 text-sm text-red-600">
+                Select a restaurant before creating the daily menu.
+              </p>
+            )}
+          </div>
+
           {/* Name */}
 
           <div>
@@ -346,14 +454,7 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
                     value={field.value}
                     onChange={(value) => {
                       field.onChange(value);
-
-                      if (value === "executive") {
-                        replace(executiveMenuOptions);
-
-                        return;
-                      }
-
-                      replace(simpleMenuOptions);
+                      handleMenuTypeChange(value);
                     }}
                     options={menuTypeOptions}
                   />
@@ -446,7 +547,6 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
                 type="time"
                 {...register("end_time", {
                   required: "End time is required.",
-
                   validate: (value) => {
                     const startTime = watch("start_time");
 
@@ -546,6 +646,7 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
             append={append}
             remove={remove}
             menuType={menuType}
+            restaurantId={effectiveRestaurantId}
           />
         </div>
       </div>

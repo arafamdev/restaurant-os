@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { NavLink } from "react-router-dom";
-
 import {
   HiOutlineCheckCircle,
   HiOutlineSquares2X2,
@@ -10,13 +9,11 @@ import {
 import { useTables } from "../features/tables/hooks/useTables";
 import { useHasPermission } from "../features/auth/hooks/useHasPermission";
 import { useCurrentUserContext } from "../features/auth/hooks/useCurrentUserContext";
+import { useRestaurantContext } from "../context/useRestaurantContext";
 
 import TableList from "../features/tables/components/TableList";
-
 import ViewSwitcher from "../ui/ViewSwitcher";
-
 import useViewMode from "../hooks/useViewMode";
-
 import Spinner from "../ui/Spinner";
 import Button from "../ui/Button";
 
@@ -25,13 +22,17 @@ function Tables() {
 
   const [view, setView] = useViewMode("tables");
 
-  const [selectedRestaurant, setSelectedRestaurant] = useState("all");
-
   const {
     userContext,
     isLoading: isUserContextLoading,
     error: userContextError,
   } = useCurrentUserContext();
+
+  const {
+    isAllRestaurants,
+    isLoading: isRestaurantContextLoading,
+    error: restaurantContextError,
+  } = useRestaurantContext();
 
   const {
     hasPermission,
@@ -44,76 +45,57 @@ function Tables() {
   const canManageTables = isPlatformAdmin || hasPermission;
 
   const isLoadingPage =
-    isLoading || isPermissionLoading || isUserContextLoading;
+    isLoading ||
+    isPermissionLoading ||
+    isUserContextLoading ||
+    isRestaurantContextLoading;
 
-  const pageError = error || permissionError || userContextError;
+  const pageError =
+    error || permissionError || userContextError || restaurantContextError;
 
-  const tableList = tables ?? [];
-
-  const restaurants = useMemo(() => {
-    const uniqueRestaurants = new Map();
-
-    tableList.forEach((table) => {
-      if (!table.restaurant_id || !table.restaurants) return;
-
-      uniqueRestaurants.set(table.restaurant_id, {
-        id: table.restaurant_id,
-        name: table.restaurants.name,
-      });
-    });
-
-    return Array.from(uniqueRestaurants.values()).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
-  }, [tableList]);
-
-  const filteredTables = useMemo(() => {
-    if (!isPlatformAdmin || selectedRestaurant === "all") {
-      return tableList;
-    }
-
-    return tableList.filter(
-      (table) => String(table.restaurant_id) === selectedRestaurant,
-    );
-  }, [tableList, selectedRestaurant, isPlatformAdmin]);
+  const tableList = useMemo(() => tables ?? [], [tables]);
 
   const restaurantGroups = useMemo(() => {
-    if (!isPlatformAdmin || selectedRestaurant !== "all") {
+    if (!isPlatformAdmin || !isAllRestaurants) {
       return [];
     }
 
     const groups = new Map();
 
     tableList.forEach((table) => {
-      const restaurantId = table.restaurant_id;
+      const currentRestaurantId = table.restaurant_id;
 
-      if (!groups.has(restaurantId)) {
-        groups.set(restaurantId, {
-          id: restaurantId,
-          name: table.restaurants?.name ?? `Restaurant ${restaurantId}`,
+      if (!currentRestaurantId) {
+        return;
+      }
+
+      if (!groups.has(currentRestaurantId)) {
+        groups.set(currentRestaurantId, {
+          id: currentRestaurantId,
+          name: table.restaurants?.name ?? `Restaurant ${currentRestaurantId}`,
           tables: [],
         });
       }
 
-      groups.get(restaurantId).tables.push(table);
+      groups.get(currentRestaurantId).tables.push(table);
     });
 
     return Array.from(groups.values()).sort((a, b) =>
       a.name.localeCompare(b.name),
     );
-  }, [tableList, isPlatformAdmin, selectedRestaurant]);
+  }, [tableList, isPlatformAdmin, isAllRestaurants]);
 
-  const totalTables = filteredTables.length;
+  const totalTables = tableList.length;
 
-  const availableTables = filteredTables.filter(
+  const availableTables = tableList.filter(
     (table) => table.status === "available",
   ).length;
 
-  const occupiedTables = filteredTables.filter(
+  const occupiedTables = tableList.filter(
     (table) => table.status === "occupied",
   ).length;
 
-  const maintenanceTables = filteredTables.filter(
+  const maintenanceTables = tableList.filter(
     (table) => table.status === "maintenance",
   ).length;
 
@@ -136,7 +118,9 @@ function Tables() {
 
           <p className="mt-1 text-sm text-gray-500">
             {isPlatformAdmin
-              ? "View and manage tables across your restaurants."
+              ? isAllRestaurants
+                ? "View and manage tables across your restaurants."
+                : "View and manage tables for the selected restaurant."
               : canManageTables
                 ? "Manage your restaurant tables and their current status."
                 : "View your restaurant tables and their current status."}
@@ -149,35 +133,6 @@ function Tables() {
           </NavLink>
         )}
       </div>
-
-      {/* PLATFORM ADMIN RESTAURANT FILTER */}
-      {isPlatformAdmin && (
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-gray-950">Restaurant</p>
-
-              <p className="mt-0.5 text-xs text-gray-500">
-                Filter tables by restaurant.
-              </p>
-            </div>
-
-            <select
-              value={selectedRestaurant}
-              onChange={(event) => setSelectedRestaurant(event.target.value)}
-              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 transition outline-none focus:border-gray-950 focus:ring-2 focus:ring-gray-950/10"
-            >
-              <option value="all">All restaurants</option>
-
-              {restaurants.map((restaurant) => (
-                <option key={restaurant.id} value={restaurant.id}>
-                  {restaurant.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      )}
 
       {/* SUMMARY */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -266,7 +221,7 @@ function Tables() {
       </div>
 
       {/* TABLES */}
-      {isPlatformAdmin && selectedRestaurant === "all" ? (
+      {isPlatformAdmin && isAllRestaurants ? (
         <div className="space-y-8">
           {restaurantGroups.map((restaurant) => (
             <section key={restaurant.id}>
@@ -294,11 +249,7 @@ function Tables() {
           )}
         </div>
       ) : (
-        <TableList
-          tables={filteredTables}
-          view={view}
-          canManage={canManageTables}
-        />
+        <TableList tables={tableList} view={view} canManage={canManageTables} />
       )}
     </div>
   );
