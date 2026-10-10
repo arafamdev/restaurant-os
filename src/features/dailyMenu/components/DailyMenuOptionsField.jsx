@@ -1,5 +1,4 @@
 import { Controller, useWatch } from "react-hook-form";
-
 import { HiOutlinePlus, HiOutlineTrash } from "react-icons/hi2";
 
 import Button from "../../../ui/Button";
@@ -38,7 +37,7 @@ function DailyMenuOptionsField({
   menuType,
   restaurantId,
 }) {
-  const { menuItems, isLoading } = useMenuItems(restaurantId);
+  const { menuItems = [], isLoading } = useMenuItems(restaurantId);
 
   const selectedOptions = useWatch({
     control,
@@ -47,19 +46,23 @@ function DailyMenuOptionsField({
 
   if (!restaurantId) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-[#111827] dark:text-gray-400">
         Select a restaurant first to load its menu items.
       </div>
     );
   }
 
   if (isLoading) {
-    return <p className="text-sm text-gray-500">Loading menu items...</p>;
+    return (
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Loading menu items...
+      </p>
+    );
   }
 
   if (menuItems.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+      <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 dark:border-gray-700 dark:bg-[#111827] dark:text-gray-400">
         No menu items found for this restaurant.
       </div>
     );
@@ -112,15 +115,15 @@ function DailyMenuOptionsField({
         return (
           <div
             key={componentType}
-            className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+            className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-[#111827]"
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h4 className="font-semibold text-gray-900">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100">
                   {componentLabels[componentType]}
                 </h4>
 
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Select one or more options.
                 </p>
               </div>
@@ -138,7 +141,7 @@ function DailyMenuOptionsField({
 
             <div className="mt-4 space-y-3">
               {componentOptions.length === 0 && (
-                <p className="rounded-lg border border-dashed border-gray-300 bg-white p-3 text-sm text-gray-500">
+                <p className="rounded-lg border border-dashed border-gray-300 bg-white p-3 text-sm text-gray-500 dark:border-gray-700 dark:bg-[#1F2937] dark:text-gray-400">
                   No {componentLabels[componentType].toLowerCase()} option
                   selected.
                 </p>
@@ -161,10 +164,10 @@ function DailyMenuOptionsField({
                       <Controller
                         name={`options.${index}.menu_item_id`}
                         control={control}
-                        render={({ field }) => (
+                        render={({ field: controllerField }) => (
                           <Select
-                            value={field.value}
-                            onChange={field.onChange}
+                            value={controllerField.value}
+                            onChange={controllerField.onChange}
                             options={[
                               {
                                 value: "",
@@ -180,10 +183,10 @@ function DailyMenuOptionsField({
                     <button
                       type="button"
                       onClick={() => remove(index)}
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
                       aria-label={`Remove ${componentLabels[
                         componentType
                       ].toLowerCase()} option`}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-gray-700 dark:bg-[#1F2937] dark:text-gray-400 dark:hover:border-red-800 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                     >
                       <HiOutlineTrash className="h-4 w-4" />
                     </button>

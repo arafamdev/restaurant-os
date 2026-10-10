@@ -1,65 +1,10 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 500 160"
-  width="100%"
-  height="100%"
->
-  <!-- RestaurantOS logo for dark backgrounds -->
-
-  <g transform="translate(40, 30)">
-    <!-- Logo Mark -->
-    <g>
-      <!-- R Stem -->
-      <rect
-        x="0"
-        y="0"
-        width="16"
-        height="100"
-        rx="8"
-        fill="#FFFFFF"
-      />
-
-      <!-- O -->
-      <circle
-        cx="50"
-        cy="50"
-        r="42"
-        stroke="#FFFFFF"
-        stroke-width="16"
-        fill="none"
-      />
-
-      <!-- R Leg -->
-      <path
-        d="M 50,50 L 85,92"
-        stroke="#FFFFFF"
-        stroke-width="16"
-        stroke-linecap="round"
-      />
-
-      <!-- Accent -->
-      <circle
-        cx="50"
-        cy="50"
-        r="10"
-        fill="#10B981"
-      />
-    </g>
-
-    <!-- Wordmark -->
-    <g transform="translate(130, 68)">
-      <text
-        font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="42"
-        font-weight="800"
-        fill="#FFFFFF"
-        letter-spacing="-0.5"
-      >
-        Restaurant<tspan
-          font-weight="400"
-          fill="#9CA3AF"
-        >OS</tspan>
-      </text>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="160" viewBox="0 0 620 160" fill="none">
+  <title>RestaurantOS — logótipo tema escuro</title>
+  <g transform="translate(8 8)">
+    <path d="M34 18H91C119 18 137 34 137 58C137 78 125 91 106 97L143 143H103L72 102H63V143H34V18ZM63 44V78H88C100 78 108 72 108 61C108 50 100 44 88 44H63Z" fill="#F9FAFB"/>
+    <path d="M12 77C23 60 39 53 60 54C59 75 48 100 24 116C15 102 11 90 12 77Z" fill="#10B981"/>
+    <path d="M20 108L50 66" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round"/>
   </g>
+  <text x="170" y="91" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="54" font-weight="700" letter-spacing="-2.1" fill="#F9FAFB">Restaurant<tspan fill="#10B981">OS</tspan></text>
+  <text x="174" y="124" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600" letter-spacing="4.2" fill="#9CA3AF">MANAGE  ·  SERVE  ·  GROW</text>
 </svg>

@@ -1,17 +1,20 @@
 function RestaurantTableIcon({ shape = "round", status = "available" }) {
-  const tableColor = {
-    available: "bg-emerald-500",
-    selected: "bg-emerald-600",
-    occupied: "bg-red-500",
-    maintenance: "bg-gray-400",
-  }[status];
+  const tableColors = {
+    available: "bg-emerald-500 dark:bg-emerald-900",
+    selected: "bg-emerald-600 dark:bg-emerald-800",
+    occupied: "bg-red-500 dark:bg-red-900",
+    maintenance: "bg-gray-400 dark:bg-gray-600",
+  };
 
-  const chairColor = {
-    available: "bg-gray-400",
-    selected: "bg-emerald-300",
-    occupied: "bg-red-300",
-    maintenance: "bg-gray-300",
-  }[status];
+  const chairColors = {
+    available: "bg-gray-400 dark:bg-gray-600",
+    selected: "bg-emerald-300 dark:bg-emerald-800",
+    occupied: "bg-red-300 dark:bg-red-900",
+    maintenance: "bg-gray-300 dark:bg-gray-700",
+  };
+
+  const tableColor = tableColors[status] ?? tableColors.available;
+  const chairColor = chairColors[status] ?? chairColors.available;
 
   return (
     <div className="relative h-12 w-12 shrink-0">

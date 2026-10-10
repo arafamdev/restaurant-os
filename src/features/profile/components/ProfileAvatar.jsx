@@ -1,7 +1,5 @@
 function getInitials(name) {
-  if (!name) {
-    return "?";
-  }
+  if (!name) return "?";
 
   return name
     .trim()
@@ -23,7 +21,9 @@ function ProfileAvatar({ name, avatarUrl, size = "medium" }) {
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-950 font-semibold tracking-tight text-white shadow-sm ring-1 ring-gray-950/5 ${sizeClasses[size]} `}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-900 font-semibold tracking-tight text-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-600/60 ${
+        sizeClasses[size] || sizeClasses.medium
+      }`}
     >
       {avatarUrl ? (
         <img

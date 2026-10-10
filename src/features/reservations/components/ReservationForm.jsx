@@ -1,4 +1,5 @@
 import { useForm, useWatch } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import ReservationCustomerField from "./ReservationCustomerField";
 import ReservationDateField from "./ReservationDateField";
@@ -8,9 +9,7 @@ import ReservationTableField from "./ReservationTableField";
 import ReservationNotesField from "./ReservationNotesField";
 
 import { createReservationDateTime } from "../../../utils/dateUtils";
-
 import { useCreateReservation } from "../hooks/useCreateReservation";
-import { useNavigate } from "react-router-dom";
 
 function ReservationForm() {
   const { control, handleSubmit, reset } = useForm({
@@ -25,7 +24,6 @@ function ReservationForm() {
   });
 
   const { createReservation, isCreating } = useCreateReservation();
-
   const navigate = useNavigate();
 
   const selectedDate = useWatch({
@@ -61,7 +59,7 @@ function ReservationForm() {
 
     const endsAt = new Date(startsAt);
 
-    // Current reservation duration: 2 hours.
+    // Duração atual da reserva: 2 horas.
     endsAt.setHours(endsAt.getHours() + 2);
 
     const newReservation = {
@@ -95,7 +93,6 @@ function ReservationForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <ReservationDateField control={control} />
-
         <ReservationTimeField control={control} />
       </div>
 
@@ -110,13 +107,15 @@ function ReservationForm() {
 
       <ReservationNotesField control={control} />
 
-      <button
-        type="submit"
-        disabled={isCreating}
-        className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isCreating ? "Creating..." : "Create reservation"}
-      </button>
+      <div className="flex justify-end border-t border-gray-200 pt-5 dark:border-gray-700">
+        <button
+          type="submit"
+          disabled={isCreating}
+          className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-500 dark:text-gray-950 dark:hover:bg-emerald-400"
+        >
+          {isCreating ? "Creating..." : "Create reservation"}
+        </button>
+      </div>
     </form>
   );
 }

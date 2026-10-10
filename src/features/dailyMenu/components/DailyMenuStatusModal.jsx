@@ -8,12 +8,12 @@ function DailyMenuStatusModal({ dailyMenu, onClose, onConfirm, isProcessing }) {
 
   return (
     <Modal onClose={onClose}>
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900">
+      <div className="text-gray-900 dark:text-gray-100">
+        <h2 className="text-xl font-semibold">
           {isDeactivating ? "Deactivate daily menu?" : "Activate daily menu?"}
         </h2>
 
-        <p className="mt-2 text-sm leading-6 text-gray-500">
+        <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
           {isDeactivating
             ? `Are you sure you want to deactivate "${dailyMenu.name}"? It will no longer be available as an active daily menu.`
             : `Are you sure you want to activate "${dailyMenu.name}"?`}

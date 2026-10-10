@@ -22,20 +22,24 @@ function ReservationFilters({
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
+      {/* SEARCH */}
       <input
         type="search"
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
         placeholder="Search guest..."
-        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+        aria-label="Search guest"
+        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition outline-none placeholder:text-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-gray-700 dark:bg-[#111827] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-400 dark:focus:ring-emerald-500/10"
       />
 
+      {/* STATUS */}
       <Select
         value={statusFilter}
         onChange={onStatusChange}
         options={statusOptions}
       />
 
+      {/* DATE */}
       <DatePicker selected={selectedDate} onSelect={onDateChange} />
     </div>
   );

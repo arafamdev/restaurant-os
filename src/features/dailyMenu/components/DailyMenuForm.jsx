@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import { useRestaurantContext } from "../../../context/useRestaurantContext";
@@ -11,7 +9,6 @@ import Select from "../../../ui/Select";
 
 import { useCurrentUserContext } from "../../auth/hooks/useCurrentUserContext";
 import { useRestaurants } from "../../restaurants/hooks/useRestaurants";
-
 import { useCreateDailyMenu } from "../hooks/useCreateDailyMenu";
 import { useDailyMenu } from "../hooks/useDailyMenu";
 import { useUpdateDailyMenu } from "../hooks/useUpdateDailyMenu";
@@ -25,7 +22,6 @@ const defaultFormValues = {
   price: "",
   start_time: "12:00",
   end_time: "15:30",
-
   monday: true,
   tuesday: true,
   wednesday: true,
@@ -33,10 +29,8 @@ const defaultFormValues = {
   friday: true,
   saturday: false,
   sunday: false,
-
   include_bread: false,
   include_coffee: false,
-
   options: [
     {
       component_type: "starter",
@@ -87,34 +81,13 @@ const menuTypeOptions = [
 ];
 
 const availableDays = [
-  {
-    value: "monday",
-    label: "Monday",
-  },
-  {
-    value: "tuesday",
-    label: "Tuesday",
-  },
-  {
-    value: "wednesday",
-    label: "Wednesday",
-  },
-  {
-    value: "thursday",
-    label: "Thursday",
-  },
-  {
-    value: "friday",
-    label: "Friday",
-  },
-  {
-    value: "saturday",
-    label: "Saturday",
-  },
-  {
-    value: "sunday",
-    label: "Sunday",
-  },
+  { value: "monday", label: "Monday" },
+  { value: "tuesday", label: "Tuesday" },
+  { value: "wednesday", label: "Wednesday" },
+  { value: "thursday", label: "Thursday" },
+  { value: "friday", label: "Friday" },
+  { value: "saturday", label: "Saturday" },
+  { value: "sunday", label: "Sunday" },
 ];
 
 function validateMenuOptions(menuType, options) {
@@ -164,13 +137,11 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
   } = useRestaurantContext();
 
   const { userContext } = useCurrentUserContext();
-
   const { restaurants = [] } = useRestaurants();
 
   const {
     register,
     handleSubmit,
-    watch,
     control,
     reset,
     formState: { errors },
@@ -183,26 +154,36 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
     name: "options",
   });
 
-  const menuType = watch("menu_type");
+  const menuType = useWatch({
+    control,
+    name: "menu_type",
+  });
 
-  const selectedDays = watch([
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-  ]);
+  const selectedDays =
+    useWatch({
+      control,
+      name: [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ],
+    }) ?? [];
+
+  const startTime = useWatch({
+    control,
+    name: "start_time",
+  });
 
   const { createDailyMenu, isCreating } = useCreateDailyMenu();
-
   const { updateDailyMenu, isUpdating } = useUpdateDailyMenu();
 
   const { dailyMenu: fullDailyMenu, isLoading } = useDailyMenu(dailyMenu?.id);
 
   const isEditing = Boolean(dailyMenu);
-
   const isSaving = isCreating || isUpdating;
 
   const effectiveRestaurantId = isEditing
@@ -214,54 +195,24 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
       : userContext?.restaurant_id;
 
   useEffect(() => {
-    if (isEditing) return;
-
-    if (isPlatformAdmin && isAllRestaurants) {
-      setSelectedRestaurantId("");
-      return;
-    }
-
-    if (contextRestaurantId) {
-      setSelectedRestaurantId(String(contextRestaurantId));
-    }
-  }, [isEditing, isPlatformAdmin, isAllRestaurants, contextRestaurantId]);
-
-  useEffect(() => {
     if (!fullDailyMenu) return;
-
-    setSelectedRestaurantId(String(fullDailyMenu.restaurant_id));
 
     reset({
       name: fullDailyMenu.name,
-
       description: fullDailyMenu.description || "",
-
       menu_type: fullDailyMenu.menu_type,
-
       price: String(fullDailyMenu.price),
-
       start_time: fullDailyMenu.start_time.slice(0, 5),
-
       end_time: fullDailyMenu.end_time.slice(0, 5),
-
       monday: fullDailyMenu.monday,
-
       tuesday: fullDailyMenu.tuesday,
-
       wednesday: fullDailyMenu.wednesday,
-
       thursday: fullDailyMenu.thursday,
-
       friday: fullDailyMenu.friday,
-
       saturday: fullDailyMenu.saturday,
-
       sunday: fullDailyMenu.sunday,
-
       include_bread: fullDailyMenu.include_bread,
-
       include_coffee: fullDailyMenu.include_coffee,
-
       options: fullDailyMenu.daily_menu_options.map((option) => ({
         component_type: option.component_type,
         menu_item_id: String(option.menu_item_id),
@@ -272,7 +223,7 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
   function handleRestaurantChange(value) {
     setSelectedRestaurantId(value);
 
-    // Os menu items pertencem ao restaurante selecionado.
+    // Os pratos pertencem ao restaurante selecionado.
     // Limpamos as opções para evitar misturar restaurantes.
     replace(simpleMenuOptions);
   }
@@ -336,7 +287,11 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
   }
 
   if (dailyMenu && isLoading) {
-    return <p className="text-sm text-gray-500">Loading daily menu...</p>;
+    return (
+      <p className="text-sm text-gray-500 dark:text-gray-400">
+        Loading daily menu...
+      </p>
+    );
   }
 
   const restaurantOptions = [
@@ -355,24 +310,25 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
   );
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-6 text-gray-900 dark:text-gray-100"
+    >
       {/* Basic information */}
-
       <div>
-        <h3 className="text-base font-semibold text-gray-900">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
           Basic information
         </h3>
 
         <div className="mt-4 space-y-4">
           {/* Restaurant */}
-
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
+            <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Restaurant
             </label>
 
             {isEditing ? (
-              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700">
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 dark:border-gray-700 dark:bg-[#111827] dark:text-gray-300">
                 {selectedRestaurant?.name ||
                   fullDailyMenu?.restaurants?.name ||
                   "Restaurant"}
@@ -387,18 +343,17 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
             )}
 
             {!effectiveRestaurantId && (
-              <p className="mt-1 text-sm text-red-600">
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                 Select a restaurant before creating the daily menu.
               </p>
             )}
           </div>
 
           {/* Name */}
-
           <div>
             <label
               htmlFor="name"
-              className="mb-1.5 block text-sm font-medium text-gray-700"
+              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               Name
             </label>
@@ -413,36 +368,35 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
             />
 
             {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.name.message}
+              </p>
             )}
           </div>
 
           {/* Description */}
-
           <div>
             <label
               htmlFor="description"
-              className="mb-1.5 block text-sm font-medium text-gray-700"
+              className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               Description
             </label>
 
             <textarea
               id="description"
-              rows="3"
+              rows={3}
               placeholder="Describe this daily menu..."
               {...register("description")}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition outline-none placeholder:text-gray-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 dark:border-gray-600 dark:bg-[#111827] dark:text-gray-100 dark:placeholder:text-gray-500"
             />
           </div>
 
-          {/* Menu type + price */}
-
+          {/* Menu type and price */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Menu type */}
-
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Menu type
               </label>
 
@@ -463,11 +417,10 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
             </div>
 
             {/* Price */}
-
             <div>
               <label
                 htmlFor="price"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
+                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
                 Price (€)
               </label>
@@ -489,7 +442,7 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
               />
 
               {errors.price && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                   {errors.price.message}
                 </p>
               )}
@@ -499,20 +452,19 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
       </div>
 
       {/* Schedule */}
-
       <div>
-        <h3 className="text-base font-semibold text-gray-900">Schedule</h3>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+          Schedule
+        </h3>
 
         <div className="mt-4 space-y-4">
           {/* Time range */}
-
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Start time */}
-
             <div>
               <label
                 htmlFor="start_time"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
+                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
                 Start time
               </label>
@@ -526,18 +478,17 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
               />
 
               {errors.start_time && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                   {errors.start_time.message}
                 </p>
               )}
             </div>
 
             {/* End time */}
-
             <div>
               <label
                 htmlFor="end_time"
-                className="mb-1.5 block text-sm font-medium text-gray-700"
+                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
                 End time
               </label>
@@ -548,8 +499,6 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
                 {...register("end_time", {
                   required: "End time is required.",
                   validate: (value) => {
-                    const startTime = watch("start_time");
-
                     if (!startTime || !value) {
                       return true;
                     }
@@ -562,7 +511,7 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
               />
 
               {errors.end_time && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                   {errors.end_time.message}
                 </p>
               )}
@@ -570,9 +519,8 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
           </div>
 
           {/* Available days */}
-
           <div>
-            <p className="mb-3 text-sm font-medium text-gray-700">
+            <p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
               Available days
             </p>
 
@@ -580,21 +528,20 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
               {availableDays.map((day) => (
                 <label
                   key={day.value}
-                  className="flex items-center gap-2 text-sm text-gray-700"
+                  className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
                 >
                   <input
                     type="checkbox"
                     {...register(day.value)}
-                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:border-gray-600 dark:bg-[#111827]"
                   />
-
                   {day.label}
                 </label>
               ))}
             </div>
 
             {!selectedDays.some(Boolean) && (
-              <p className="mt-2 text-sm text-red-600">
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                 Select at least one day.
               </p>
             )}
@@ -603,25 +550,26 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
       </div>
 
       {/* Inclusions */}
-
       <div>
-        <h3 className="text-base font-semibold text-gray-900">Inclusions</h3>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+          Inclusions
+        </h3>
 
         <div className="mt-4 space-y-3">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
             <input
               type="checkbox"
               {...register("include_bread")}
-              className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:border-gray-600 dark:bg-[#111827]"
             />
             Include bread
           </label>
 
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
             <input
               type="checkbox"
               {...register("include_coffee")}
-              className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 dark:border-gray-600 dark:bg-[#111827]"
             />
             Include coffee
           </label>
@@ -629,11 +577,12 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
       </div>
 
       {/* Menu options */}
-
       <div>
-        <h3 className="text-base font-semibold text-gray-900">Menu options</h3>
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+          Menu options
+        </h3>
 
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {menuType === "simple"
             ? "A simple menu requires at least one starter and one main course. You can add multiple options."
             : "An executive menu requires at least one starter, one main course and one dessert. You can add multiple options."}
@@ -652,8 +601,7 @@ function DailyMenuForm({ dailyMenu, onCloseModal }) {
       </div>
 
       {/* Actions */}
-
-      <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
+      <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
         <Button
           type="button"
           variation="secondary"

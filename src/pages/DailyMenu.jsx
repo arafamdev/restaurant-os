@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { HiOutlineClipboardDocumentList, HiOutlinePlus } from "react-icons/hi2";
 
+import PageHeader from "../ui/PageHeader";
 import Button from "../ui/Button";
 import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import ViewSwitcher from "../ui/ViewSwitcher";
+
 import useViewMode from "../hooks/useViewMode";
 
 import DailyMenuForm from "../features/dailyMenu/components/DailyMenuForm";
@@ -33,7 +36,6 @@ function DailyMenu() {
   } = useDailyMenus();
 
   const { toggleDailyMenu, isToggling } = useToggleDailyMenu();
-
   const { deleteDailyMenu, isDeleting } = useDeleteDailyMenu();
 
   const { userContext, isLoading: isUserLoading } = useCurrentUserContext();
@@ -45,7 +47,6 @@ function DailyMenu() {
   } = useHasPermission("manage_menu");
 
   const isPlatformAdmin = Boolean(userContext?.is_platform_admin);
-
   const canManageMenu = isPlatformAdmin || hasPermission;
 
   function handleToggleActive(dailyMenu) {
@@ -98,33 +99,32 @@ function DailyMenu() {
     <>
       <div className="space-y-6">
         {/* Header */}
-
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Daily Menu</h1>
-
-            <p className="mt-1 text-sm text-gray-500">
-              {canManageMenu
-                ? "Manage your daily menu offers."
-                : "View your daily menu offers."}
-            </p>
-          </div>
-
-          {canManageMenu && (
-            <Button onClick={() => setIsCreating(true)}>
-              Create daily menu
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          icon={HiOutlineClipboardDocumentList}
+          title="Daily Menu"
+          description={
+            canManageMenu
+              ? "Manage your daily menu offers."
+              : "View your daily menu offers."
+          }
+          action={
+            canManageMenu ? (
+              <Button onClick={() => setIsCreating(true)}>
+                <span className="flex items-center gap-2">
+                  <HiOutlinePlus className="h-5 w-5" />
+                  Create daily menu
+                </span>
+              </Button>
+            ) : null
+          }
+        />
 
         {/* View */}
-
         <div className="flex justify-end">
           <ViewSwitcher value={view} onChange={setView} />
         </div>
 
         {/* List */}
-
         <DailyMenuList
           dailyMenus={dailyMenus}
           view={view}
@@ -136,15 +136,14 @@ function DailyMenu() {
       </div>
 
       {/* Create */}
-
       {canManageMenu && isCreating && (
         <Modal onClose={() => setIsCreating(false)}>
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Create daily menu
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Create a new daily menu offer.
             </p>
           </div>
@@ -154,15 +153,14 @@ function DailyMenu() {
       )}
 
       {/* Edit */}
-
       {canManageMenu && editingDailyMenu && (
         <Modal onClose={() => setEditingDailyMenu(null)}>
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Edit daily menu
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Update this daily menu offer.
             </p>
           </div>
@@ -175,7 +173,6 @@ function DailyMenu() {
       )}
 
       {/* Delete */}
-
       {canManageMenu && deletingDailyMenu && (
         <Modal
           onClose={() => {
@@ -184,17 +181,15 @@ function DailyMenu() {
             }
           }}
         >
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Delete daily menu?
-            </h2>
+          <div className="text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-semibold">Delete daily menu?</h2>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
               Are you sure you want to delete{" "}
               <strong>{deletingDailyMenu.name}</strong>?
             </p>
 
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
               This action cannot be undone.
             </p>
 
@@ -228,7 +223,6 @@ function DailyMenu() {
       )}
 
       {/* Toggle status */}
-
       {canManageMenu && dailyMenuToToggle && (
         <DailyMenuStatusModal
           dailyMenu={dailyMenuToToggle}

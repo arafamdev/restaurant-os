@@ -11,118 +11,112 @@ function RestaurantDaySummary({ restaurantDay }) {
     ? new Date(restaurantDay.closed_at).toLocaleString("pt-PT")
     : "Unknown";
 
+  const cardStyles =
+    "rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-[#111827] sm:p-6";
+
+  const mutedStyles = "text-sm text-gray-500 dark:text-gray-400";
+
+  const valueStyles = "mt-1 font-medium text-gray-900 dark:text-gray-100";
+
+  const sectionStyles =
+    "rounded-xl border border-gray-200 p-4 dark:border-gray-700 dark:bg-[#0B1120]/50 sm:p-5";
+
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
-      {/* Header */}
+    <div className={cardStyles}>
       <div className="flex items-center gap-3">
         <span className="h-3 w-3 rounded-full bg-gray-400" />
 
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-950 dark:text-gray-100">
           Last Restaurant Day
         </h2>
       </div>
 
-      <p className="mt-2 text-sm text-gray-500">
+      <p className={`mt-2 ${mutedStyles}`}>
         Summary of the most recently closed Restaurant Day.
       </p>
 
-      {/* Business date */}
-      <div className="mt-6 border-b border-gray-100 pb-6">
-        <p className="text-sm text-gray-500">Business date</p>
-
-        <p className="mt-1 font-medium text-gray-900">
-          {restaurantDay.business_date}
-        </p>
+      <div className="mt-6 border-b border-gray-100 pb-5 dark:border-gray-800">
+        <p className={mutedStyles}>Business date</p>
+        <p className={valueStyles}>{restaurantDay.business_date}</p>
       </div>
 
-      {/* Opening & Closing */}
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* Opening Summary */}
-        <div className="rounded-lg border border-gray-200 p-5">
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
+        <section className={sectionStyles}>
           <div className="flex items-center gap-3">
-            <span className="h-3 w-3 rounded-full bg-green-500" />
+            <span className="h-3 w-3 rounded-full bg-emerald-500" />
 
-            <h3 className="text-base font-semibold text-gray-900">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
               Opening Summary
             </h3>
           </div>
 
           <div className="mt-5 space-y-4">
             <div>
-              <p className="text-sm text-gray-500">Opened by</p>
-
-              <p className="mt-1 font-medium text-gray-900">
+              <p className={mutedStyles}>Opened by</p>
+              <p className={valueStyles}>
                 {restaurantDay.opened_employee?.full_name || "Unknown"}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Opened at</p>
-
-              <p className="mt-1 font-medium text-gray-900">{openedAt}</p>
+              <p className={mutedStyles}>Opened at</p>
+              <p className={valueStyles}>{openedAt}</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Opening cash</p>
-
-              <p className="mt-1 font-medium text-gray-900">
+              <p className={mutedStyles}>Opening cash</p>
+              <p className={valueStyles}>
                 €{Number(restaurantDay.opening_cash).toFixed(2)}
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Closing Summary */}
-        <div className="rounded-lg border border-gray-200 p-5">
+        <section className={sectionStyles}>
           <div className="flex items-center gap-3">
             <span className="h-3 w-3 rounded-full bg-red-500" />
 
-            <h3 className="text-base font-semibold text-gray-900">
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
               Closing Summary
             </h3>
           </div>
 
           <div className="mt-5 space-y-4">
             <div>
-              <p className="text-sm text-gray-500">Closed by</p>
-
-              <p className="mt-1 font-medium text-gray-900">
+              <p className={mutedStyles}>Closed by</p>
+              <p className={valueStyles}>
                 {restaurantDay.closed_employee?.full_name || "Unknown"}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Closed at</p>
-
-              <p className="mt-1 font-medium text-gray-900">{closedAt}</p>
+              <p className={mutedStyles}>Closed at</p>
+              <p className={valueStyles}>{closedAt}</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">Closing cash</p>
-
-              <p className="mt-1 font-medium text-gray-900">
+              <p className={mutedStyles}>Closing cash</p>
+              <p className={valueStyles}>
                 €{Number(restaurantDay.closing_cash).toFixed(2)}
               </p>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Status */}
-      <div className="mt-6 border-t border-gray-100 pt-5">
-        <p className="text-sm text-gray-500">Status</p>
-
-        <p className="mt-1 font-medium text-gray-600 capitalize">
+      <div className="mt-6 border-t border-gray-100 pt-5 dark:border-gray-800">
+        <p className={mutedStyles}>Status</p>
+        <p className="mt-1 font-semibold text-gray-600 capitalize dark:text-gray-300">
           {restaurantDay.status}
         </p>
       </div>
 
-      {/* Notes */}
       {restaurantDay.notes && (
-        <div className="mt-5 border-t border-gray-100 pt-5">
-          <p className="text-sm text-gray-500">Notes</p>
-
-          <p className="mt-1 text-sm text-gray-900">{restaurantDay.notes}</p>
+        <div className="mt-5 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <p className={mutedStyles}>Notes</p>
+          <p className="mt-1 text-sm whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+            {restaurantDay.notes}
+          </p>
         </div>
       )}
     </div>

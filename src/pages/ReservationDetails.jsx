@@ -4,7 +4,6 @@ import Spinner from "../ui/Spinner";
 import ErrorMessage from "../ui/ErrorMessage";
 import ReservationActions from "../features/reservations/components/ReservationActions";
 import ReservationDelay from "../features/reservations/components/ReservationDelay";
-
 import { useReservation } from "../features/reservations/hooks/useReservation";
 
 import {
@@ -26,7 +25,7 @@ function ReservationDetails() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <ErrorMessage message={error.message} />
       </div>
     );
@@ -34,7 +33,7 @@ function ReservationDetails() {
 
   if (!reservation) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <ErrorMessage message="Reservation not found." />
       </div>
     );
@@ -45,24 +44,36 @@ function ReservationDetails() {
 
   const reservationDate = formatReservationDate(starts_at, ends_at);
 
+  const cardClass =
+    "rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 dark:border-gray-700/80 dark:bg-[#111827]";
+
+  const labelClass =
+    "text-xs font-medium tracking-wide text-gray-400 uppercase dark:text-gray-500";
+
+  const valueClass =
+    "mt-1 text-sm font-medium break-words text-gray-900 dark:text-gray-100";
+
+  const secondaryValueClass =
+    "mt-1 text-sm leading-6 break-words text-gray-600 dark:text-gray-300";
+
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       {/* Header */}
       <div>
         <Link
           to="/reservations"
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-gray-900"
+          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
         >
-          <BackButton to="/tables" label="Back to Tables" />
+          <BackButton to="/reservations" label="Back to Reservations" />
         </Link>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl dark:text-gray-100">
               Reservation #{reservation.id}
             </h1>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Reservation details and information.
             </p>
           </div>
@@ -84,112 +95,102 @@ function ReservationDetails() {
       <ReservationActions reservation={reservation} />
 
       {/* Reservation information */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">Customer</h2>
+      <div className="grid gap-5 lg:grid-cols-2">
+        {/* Customer */}
+        <section className={cardClass}>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Customer
+          </h2>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-4">
             <div>
-              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                Name
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-gray-900">
-                {customers.full_name}
+              <p className={labelClass}>Name</p>
+              <p className={valueClass}>
+                {customers?.full_name || "Not available"}
               </p>
             </div>
 
-            {customers.email && (
+            {customers?.email && (
               <div>
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Email
-                </p>
-
-                <p className="mt-1 text-sm text-gray-700">{customers.email}</p>
+                <p className={labelClass}>Email</p>
+                <p className={secondaryValueClass}>{customers.email}</p>
               </div>
             )}
 
-            {customers.phone && (
+            {customers?.phone && (
               <div>
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Phone
-                </p>
-
-                <p className="mt-1 text-sm text-gray-700">{customers.phone}</p>
+                <p className={labelClass}>Phone</p>
+                <p className={secondaryValueClass}>{customers.phone}</p>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">Reservation</h2>
+        {/* Reservation */}
+        <section className={cardClass}>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Reservation
+          </h2>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-4">
             <div>
-              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                Date & time
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-gray-900">
-                {reservationDate}
-              </p>
+              <p className={labelClass}>Date & time</p>
+              <p className={valueClass}>{reservationDate}</p>
             </div>
 
             <div>
-              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                Guests
-              </p>
-
-              <p className="mt-1 text-sm text-gray-700">
+              <p className={labelClass}>Guests</p>
+              <p className={secondaryValueClass}>
                 {guests} {guests === 1 ? "guest" : "guests"}
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">Table</h2>
+        {/* Table */}
+        <section className={cardClass}>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Table
+          </h2>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-4">
             <div>
-              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                Table
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-gray-900">
-                Table {tables.table_number}
+              <p className={labelClass}>Table</p>
+              <p className={valueClass}>
+                {tables?.table_number != null
+                  ? `Table ${tables.table_number}`
+                  : "Not assigned"}
               </p>
             </div>
 
             <div>
-              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                Capacity
-              </p>
-
-              <p className="mt-1 text-sm text-gray-700">
-                {tables.capacity} seats
+              <p className={labelClass}>Capacity</p>
+              <p className={secondaryValueClass}>
+                {tables?.capacity != null
+                  ? `${tables.capacity} seats`
+                  : "Not available"}
               </p>
             </div>
 
-            {tables.location && (
+            {tables?.location && (
               <div>
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Location
-                </p>
-
-                <p className="mt-1 text-sm text-gray-700">{tables.location}</p>
+                <p className={labelClass}>Location</p>
+                <p className={secondaryValueClass}>{tables.location}</p>
               </div>
             )}
           </div>
-        </div>
+        </section>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-gray-900">Notes</h2>
+        {/* Notes */}
+        <section className={cardClass}>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Notes
+          </h2>
 
-          <p className="mt-4 text-sm leading-6 text-gray-600">
+          <p className="mt-4 text-sm leading-6 text-gray-600 dark:text-gray-300">
             {notes || "No notes for this reservation."}
           </p>
-        </div>
+        </section>
       </div>
     </div>
   );

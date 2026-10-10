@@ -4,8 +4,32 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>restauranteos</title>
+    <meta name="theme-color" content="#0B1120" />
+    <meta
+      name="description"
+      content="RestaurantOS — Restaurant Management Platform"
+    />
+    <title>RestaurantOS</title>
+
+    <script>
+      (() => {
+        try {
+          const savedTheme = localStorage.getItem("restaurantos-theme");
+          const theme =
+            savedTheme === "light" || savedTheme === "dark"
+              ? savedTheme
+              : "dark";
+
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.documentElement.style.colorScheme = theme;
+        } catch {
+          document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = "dark";
+        }
+      })();
+    </script>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

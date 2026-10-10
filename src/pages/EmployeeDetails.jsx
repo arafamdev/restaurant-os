@@ -17,13 +17,51 @@ import Select from "../ui/Select";
 import Spinner from "../ui/Spinner";
 
 import { useHasPermission } from "../features/auth/hooks/useHasPermission";
-
 import { useChangeEmployeeRole } from "../features/staff/hooks/useChangeEmployeeRole";
 import { useEmployee } from "../features/staff/hooks/useEmployee";
 import { useRoles } from "../features/staff/hooks/useRoles";
 import { useUpdateEmployeeStatus } from "../features/staff/hooks/useUpdateEmployeeStatus";
-
 import EmployeePermissions from "../features/staff/components/EmployeePermissions";
+
+function InfoItem({ icon: Icon, label, value }) {
+  return (
+    <div className="flex min-w-0 items-start gap-3">
+      <div className="mt-0.5 flex shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-2 dark:border-[#374151] dark:bg-[#0B1120]">
+        <Icon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-[#9CA3AF]">
+          {label}
+        </p>
+
+        <p className="mt-1 text-sm break-words text-gray-900 dark:text-[#F9FAFB]">
+          {value || "—"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ icon: Icon, title, description }) {
+  return (
+    <div className="flex items-start gap-3 border-b border-gray-200 px-5 py-4 sm:px-6 dark:border-[#374151]">
+      <div className="flex shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-2 dark:border-[#374151] dark:bg-[#0B1120]">
+        <Icon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+      </div>
+
+      <div className="min-w-0">
+        <h2 className="font-semibold text-gray-900 dark:text-[#F9FAFB]">
+          {title}
+        </h2>
+
+        <p className="mt-1 text-sm leading-5 text-gray-500 dark:text-[#9CA3AF]">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function EmployeeDetails() {
   const { employeeId } = useParams();
@@ -78,7 +116,6 @@ export default function EmployeeDetails() {
 
   const roleId = employee.roles?.id ?? employee.role_id;
   const roleName = employee.roles?.name ?? employee.role_name ?? "—";
-
   const isActive = employee.status === "active";
 
   const canManagePermissions =
@@ -152,165 +189,124 @@ export default function EmployeeDetails() {
           <BackButton to="/staff" />
 
           <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase ${
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold ${
               isActive
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400"
+                : "border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"
             }`}
           >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                isActive
+                  ? "bg-emerald-500 dark:bg-emerald-400"
+                  : "bg-red-500 dark:bg-red-400"
+              }`}
+            />
             {isActive ? "Active" : "Inactive"}
           </span>
         </div>
 
         {/* EMPLOYEE HEADER */}
-        <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 dark:border-[#374151] dark:bg-[#111827]">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-100">
-              <HiOutlineUserCircle className="h-10 w-10 text-gray-500" />
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 dark:border-emerald-500/20 dark:bg-emerald-500/10">
+              <HiOutlineUserCircle className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
             </div>
 
             <div className="min-w-0 flex-1">
-              <h1 className="truncate text-2xl font-semibold text-gray-900">
+              <p className="mb-1 text-xs font-semibold tracking-wider text-emerald-700 uppercase dark:text-emerald-400">
+                Employee profile
+              </p>
+
+              <h1 className="text-2xl font-semibold tracking-tight break-words text-gray-950 dark:text-[#F9FAFB]">
                 {employee.full_name}
               </h1>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-[#9CA3AF]">
                 {employee.restaurant_name ?? "RestaurantOS"}
               </p>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400">
                   {roleName}
                 </span>
 
-                <span className="text-xs text-gray-400">•</span>
+                <span className="text-gray-300 dark:text-[#4B5563]">•</span>
 
-                <span className="text-sm text-gray-500">ID #{employee.id}</span>
+                <span className="text-sm text-gray-500 dark:text-[#9CA3AF]">
+                  ID #{employee.id}
+                </span>
               </div>
             </div>
           </div>
         </section>
 
         {/* EMPLOYEE INFORMATION */}
-        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-4">
-            <h2 className="font-semibold text-gray-900">
-              Employee information
-            </h2>
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-[#374151] dark:bg-[#111827]">
+          <SectionHeader
+            icon={HiOutlineIdentification}
+            title="Employee information"
+            description="Basic information associated with this employee."
+          />
 
-            <p className="mt-1 text-sm text-gray-500">
-              Basic information associated with this employee.
-            </p>
-          </div>
+          <div className="grid gap-6 p-5 sm:grid-cols-2 sm:p-6">
+            <InfoItem
+              icon={HiOutlineEnvelope}
+              label="Email"
+              value={employee.email}
+            />
 
-          <div className="grid gap-5 p-5 sm:grid-cols-2">
-            {/* EMAIL */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
-                <HiOutlineEnvelope className="h-5 w-5 text-gray-500" />
-              </div>
+            <InfoItem
+              icon={HiOutlinePhone}
+              label="Phone"
+              value={employee.phone}
+            />
 
-              <div className="min-w-0">
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Email
-                </p>
+            <InfoItem
+              icon={HiOutlineIdentification}
+              label="Employee ID"
+              value={employee.id}
+            />
 
-                <p className="mt-1 text-sm break-all text-gray-900">
-                  {employee.email ?? "—"}
-                </p>
-              </div>
-            </div>
-
-            {/* PHONE */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
-                <HiOutlinePhone className="h-5 w-5 text-gray-500" />
-              </div>
-
-              <div className="min-w-0">
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Phone
-                </p>
-
-                <p className="mt-1 text-sm text-gray-900">
-                  {employee.phone ?? "—"}
-                </p>
-              </div>
-            </div>
-
-            {/* EMPLOYEE ID */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
-                <HiOutlineIdentification className="h-5 w-5 text-gray-500" />
-              </div>
-
-              <div>
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Employee ID
-                </p>
-
-                <p className="mt-1 text-sm text-gray-900">{employee.id}</p>
-              </div>
-            </div>
-
-            {/* CREATED */}
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-lg bg-gray-100 p-2">
-                <HiOutlineCheckCircle className="h-5 w-5 text-gray-500" />
-              </div>
-
-              <div>
-                <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
-                  Created
-                </p>
-
-                <p className="mt-1 text-sm text-gray-900">
-                  {formattedCreatedAt}
-                </p>
-              </div>
-            </div>
+            <InfoItem
+              icon={HiOutlineCheckCircle}
+              label="Created"
+              value={formattedCreatedAt}
+            />
           </div>
         </section>
 
         {/* ROLE & PERMISSIONS */}
-        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-gray-100 p-2">
-                <HiOutlineShieldCheck className="h-5 w-5 text-gray-500" />
-              </div>
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-[#374151] dark:bg-[#111827]">
+          <SectionHeader
+            icon={HiOutlineShieldCheck}
+            title="Role & permissions"
+            description="Change the employee's role and access level."
+          />
 
-              <div>
-                <h2 className="font-semibold text-gray-900">
-                  Role & permissions
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Change the employee's role and access level.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-5 p-5">
+          <div className="space-y-5 p-5 sm:p-6">
             <div className="max-w-md">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-[#D1D5DB]">
                 Employee role
               </label>
 
-              <Select
-                value={Number(roleId)}
-                onChange={handleRoleChange}
-                options={roleOptions}
-              />
+              <div className="[&_select]:w-full [&_select]:rounded-xl [&_select]:border-gray-300 [&_select]:bg-white [&_select]:text-gray-900 [&_select]:focus:border-emerald-500 [&_select]:focus:ring-emerald-500 dark:[&_select]:border-[#374151] dark:[&_select]:bg-[#0B1120] dark:[&_select]:text-[#F9FAFB]">
+                <Select
+                  value={Number(roleId)}
+                  onChange={handleRoleChange}
+                  options={roleOptions}
+                />
+              </div>
 
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs leading-5 text-gray-500 dark:text-[#9CA3AF]">
                 The selected role determines the employee's default permissions.
               </p>
             </div>
 
             {isChangingRole && (
-              <p className="text-sm text-gray-500">Updating role...</p>
+              <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                Updating role...
+              </p>
             )}
 
             {changeRoleError && (
@@ -320,52 +316,58 @@ export default function EmployeeDetails() {
         </section>
 
         {/* EMPLOYEE STATUS */}
-        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="border-b border-gray-200 px-5 py-4">
-            <h2 className="font-semibold text-gray-900">Employee status</h2>
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-[#374151] dark:bg-[#111827]">
+          <SectionHeader
+            icon={HiOutlineCheckCircle}
+            title="Employee status"
+            description="Control whether this employee can actively use the restaurant system."
+          />
 
-            <p className="mt-1 text-sm text-gray-500">
-              Control whether this employee can actively use the restaurant
-              system.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    isActive ? "bg-green-500" : "bg-red-500"
+                  className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                    isActive
+                      ? "bg-emerald-500 dark:bg-emerald-400"
+                      : "bg-red-500 dark:bg-red-400"
                   }`}
                 />
 
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-gray-900 dark:text-[#F9FAFB]">
                   Account is {isActive ? "active" : "inactive"}
                 </span>
               </div>
 
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500 dark:text-[#9CA3AF]">
                 {isActive
                   ? "This employee is currently active and can access RestaurantOS according to their permissions."
                   : "This employee is currently inactive and cannot actively use RestaurantOS."}
               </p>
             </div>
 
-            <Button
-              type="button"
-              onClick={handleStatusChange}
-              disabled={isUpdatingStatus}
-            >
-              {isUpdatingStatus
-                ? "Updating..."
-                : isActive
-                  ? "Deactivate"
-                  : "Activate"}
-            </Button>
+            <div className="shrink-0">
+              <Button
+                type="button"
+                onClick={handleStatusChange}
+                disabled={isUpdatingStatus}
+                className={`inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:ring-4 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${
+                  isActive
+                    ? "bg-red-600 text-white hover:bg-red-500 focus:ring-red-500/20"
+                    : "bg-emerald-600 text-white hover:bg-emerald-500 focus:ring-emerald-500/20"
+                }`}
+              >
+                {isUpdatingStatus
+                  ? "Updating..."
+                  : isActive
+                    ? "Deactivate"
+                    : "Activate"}
+              </Button>
+            </div>
           </div>
 
           {updateStatusError && (
-            <div className="px-5 pb-5">
+            <div className="px-5 pb-5 sm:px-6">
               <ErrorMessage>{updateStatusError.message}</ErrorMessage>
             </div>
           )}
@@ -373,30 +375,34 @@ export default function EmployeeDetails() {
 
         {/* EMPLOYEE PERMISSIONS */}
         {canManagePermissions && (
-          <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-gray-100 p-2">
-                  <HiOutlineShieldCheck className="h-5 w-5 text-gray-500" />
+          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-[#374151] dark:bg-[#111827]">
+            <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="flex shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 p-2 dark:border-[#374151] dark:bg-[#0B1120]">
+                  <HiOutlineShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
 
-                <div>
-                  <h2 className="font-semibold text-gray-900">
+                <div className="min-w-0">
+                  <h2 className="font-semibold text-gray-900 dark:text-[#F9FAFB]">
                     Employee permissions
                   </h2>
 
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm leading-5 text-gray-500 dark:text-[#9CA3AF]">
                     Manage permissions granted specifically to this employee.
                   </p>
                 </div>
               </div>
 
-              <Button
-                type="button"
-                onClick={() => setIsPermissionsModalOpen(true)}
-              >
-                Manage permissions
-              </Button>
+              <div className="shrink-0">
+                <Button
+                  type="button"
+                  onClick={() => setIsPermissionsModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 focus:ring-4 focus:ring-emerald-500/25 focus:outline-none"
+                >
+                  <HiOutlineShieldCheck className="h-5 w-5" />
+                  Manage permissions
+                </Button>
+              </div>
             </div>
           </section>
         )}

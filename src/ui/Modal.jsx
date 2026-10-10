@@ -32,7 +32,7 @@ function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm dark:bg-black/70"
       onClick={(event) => {
         if (closeOnOverlayClick && event.target === event.currentTarget) {
           onClose();
@@ -41,7 +41,9 @@ function Modal({
       role="presentation"
     >
       <div
-        className={`max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white p-6 shadow-xl ${sizeClasses[size]}`}
+        className={`max-h-[90vh] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-6 text-gray-950 shadow-xl transition-colors dark:border-[#374151] dark:bg-[#111827] dark:text-[#F9FAFB] ${
+          sizeClasses[size] ?? sizeClasses.medium
+        }`}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"

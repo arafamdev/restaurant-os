@@ -4,7 +4,7 @@ import useAuth from "./useAuth";
 
 import { supabase } from "../../../services/supabase";
 
-async function getHasPermission(permissionName, userId) {
+async function getHasPermission(permissionName) {
   const { data, error } = await supabase.rpc("has_permission", {
     p_permission_name: permissionName,
   });
@@ -25,7 +25,7 @@ export function useHasPermission(permissionName) {
     error,
   } = useQuery({
     queryKey: ["has-permission", user?.id, permissionName],
-    queryFn: () => getHasPermission(permissionName, user?.id),
+    queryFn: () => getHasPermission(permissionName),
     enabled: Boolean(user) && !isAuthLoading && Boolean(permissionName),
   });
 

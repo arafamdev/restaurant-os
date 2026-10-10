@@ -1,5 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
+import { ThemeProvider } from "./context/ThemeContext";
+
 // Layout & protection
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -22,14 +24,12 @@ import Profile from "./pages/Profile";
 
 // Reservations
 import Reservations from "./pages/Reservations";
-import NewReservation from "./pages/NewReservation";
 import ReservationDetails from "./pages/ReservationDetails";
 
 // Tables
 import Tables from "./pages/Tables";
 import CreateTable from "./pages/CreateTable";
 import TableDetails from "./pages/TableDetails";
-import EditTable from "./pages/EditTable";
 
 // Menu
 import Menu from "./pages/Menu";
@@ -42,60 +42,60 @@ import Orders from "./pages/Orders";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/auth/accept-invite" element={<AcceptInvite />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/accept-invite" element={<AcceptInvite />} />
 
-        {/* Protected routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route
-            element={
-              <RestaurantProvider>
-                <AppLayout />
-              </RestaurantProvider>
-            }
-          >
-            {/* Main */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/restaurant-day" element={<RestaurantDay />} />
-            <Route path="/staff" element={<Staff />} />
-            <Route path="/staff/:employeeId" element={<EmployeeDetails />} />
-            <Route path="/profile" element={<Profile />} />
-
-            {/* Reservations */}
-            <Route path="/reservations" element={<Reservations />} />
-            <Route path="/reservations/new" element={<NewReservation />} />
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
             <Route
-              path="/reservations/:reservationId"
-              element={<ReservationDetails />}
-            />
+              element={
+                <RestaurantProvider>
+                  <AppLayout />
+                </RestaurantProvider>
+              }
+            >
+              {/* Main */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/restaurant-day" element={<RestaurantDay />} />
+              <Route path="/staff" element={<Staff />} />
+              <Route path="/staff/:employeeId" element={<EmployeeDetails />} />
+              <Route path="/profile" element={<Profile />} />
 
-            {/* Tables */}
-            <Route path="/tables" element={<Tables />} />
-            <Route path="/tables/new" element={<CreateTable />} />
-            <Route path="/tables/:tableId" element={<TableDetails />} />
-            <Route path="/tables/:tableId/edit" element={<EditTable />} />
+              {/* Reservations */}
+              <Route path="/reservations" element={<Reservations />} />
+              <Route
+                path="/reservations/:reservationId"
+                element={<ReservationDetails />}
+              />
 
-            {/* Menu */}
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/menu/:menuItemId" element={<MenuItemDetails />} />
-            <Route path="/daily-menu" element={<DailyMenu />} />
+              {/* Tables */}
+              <Route path="/tables" element={<Tables />} />
+              <Route path="/tables/new" element={<CreateTable />} />
+              <Route path="/tables/:tableId" element={<TableDetails />} />
 
-            {/* Customers */}
-            <Route path="/customers" element={<Customers />} />
+              {/* Menu */}
+              <Route path="/menu" element={<Menu />} />
+              <Route path="/menu/:menuItemId" element={<MenuItemDetails />} />
+              <Route path="/daily-menu" element={<DailyMenu />} />
 
-            {/* Orders */}
-            <Route path="/orders" element={<Orders />} />
+              {/* Customers */}
+              <Route path="/customers" element={<Customers />} />
 
-            {/* 404 */}
-            <Route path="*" element={<PageNotFound />} />
+              {/* Orders */}
+              <Route path="/orders" element={<Orders />} />
+
+              {/* 404 */}
+              <Route path="*" element={<PageNotFound />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

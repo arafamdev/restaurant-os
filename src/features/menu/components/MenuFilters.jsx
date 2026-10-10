@@ -25,13 +25,19 @@ function MenuFilters({
           ? "All categories"
           : `All ${formatGroupLabel(group).toLowerCase()} categories`,
     },
-
     ...categories
       .filter((category) => group === "all" || category.group_type === group)
       .map((category) => ({
         value: String(category.id),
         label: category.name,
       })),
+  ];
+
+  const statusOptions = [
+    { value: "all", label: "All statuses" },
+    { value: "available", label: "Available" },
+    { value: "unavailable", label: "Unavailable" },
+    { value: "inactive", label: "Inactive" },
   ];
 
   return (
@@ -52,24 +58,7 @@ function MenuFilters({
       <Select
         value={status}
         onChange={onStatusChange}
-        options={[
-          {
-            value: "all",
-            label: "All statuses",
-          },
-          {
-            value: "available",
-            label: "Available",
-          },
-          {
-            value: "unavailable",
-            label: "Unavailable",
-          },
-          {
-            value: "inactive",
-            label: "Inactive",
-          },
-        ]}
+        options={statusOptions}
       />
     </div>
   );

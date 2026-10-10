@@ -3,28 +3,28 @@ import ReservationCard from "./ReservationCard";
 function ReservationList({ reservations, view = "compact" }) {
   if (view === "list") {
     return (
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-[#1F2937] dark:shadow-black/10">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[850px]">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+              <tr className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-[#111827]">
+                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   Guest
                 </th>
 
-                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   Table
                 </th>
 
-                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                  Date & time
+                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                  Date &amp; time
                 </th>
 
-                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                <th className="px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   Guests
                 </th>
 
-                <th className="px-5 py-3 text-center text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                <th className="px-5 py-3 text-center text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">
                   Status
                 </th>
 
@@ -32,7 +32,7 @@ function ReservationList({ reservations, view = "compact" }) {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {reservations.map((reservation) => (
                 <ReservationCard
                   key={reservation.id}

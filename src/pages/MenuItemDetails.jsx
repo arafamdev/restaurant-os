@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
-
 import {
   HiOutlineArrowLeft,
   HiOutlineBeaker,
@@ -17,7 +16,6 @@ import Modal from "../ui/Modal";
 import Spinner from "../ui/Spinner";
 
 import MenuItemForm from "../features/menu/components/MenuItemForm";
-
 import useMenuItem from "../features/menu/hooks/useMenuItem";
 import { useUpdateMenuItem } from "../features/menu/hooks/useUpdateMenuItem";
 
@@ -79,14 +77,14 @@ function AttributeBadges({ dietaryAttributes = [], allergens = [] }) {
       {visibleDietaryAttributes.map((attribute) => (
         <span
           key={`dietary-${attribute.id}`}
-          className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700"
+          className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
         >
           {getDietaryLabel(attribute)}
         </span>
       ))}
 
       {hiddenDietaryCount > 0 && (
-        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-500">
+        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-300">
           +{hiddenDietaryCount}
         </span>
       )}
@@ -94,14 +92,14 @@ function AttributeBadges({ dietaryAttributes = [], allergens = [] }) {
       {visibleAllergens.map((allergen) => (
         <span
           key={`allergen-${allergen.id}`}
-          className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700"
+          className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
         >
           {getAllergenLabel(allergen)}
         </span>
       ))}
 
       {hiddenAllergenCount > 0 && (
-        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-500">
+        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-semibold text-gray-500 dark:bg-gray-700 dark:text-gray-300">
           +{hiddenAllergenCount}
         </span>
       )}
@@ -153,13 +151,14 @@ function MenuItemDetails() {
   if (!menuItem) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-sm text-gray-500">Menu item not found.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Menu item not found.
+        </p>
       </div>
     );
   }
 
   const {
-    id,
     name,
     description,
     price,
@@ -189,9 +188,11 @@ function MenuItemDetails() {
       : "Available";
 
   const statusStyles = {
-    Available: "bg-emerald-50 text-emerald-700",
-    Unavailable: "bg-yellow-50 text-yellow-700",
-    Inactive: "bg-gray-100 text-gray-500",
+    Available:
+      "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+    Unavailable:
+      "bg-yellow-50 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-300",
+    Inactive: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300",
   };
 
   const statusDotStyles = {
@@ -205,7 +206,6 @@ function MenuItemDetails() {
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[status]}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${statusDotStyles[status]}`} />
-
       {status}
     </span>
   );
@@ -244,11 +244,11 @@ function MenuItemDetails() {
             </Button>
 
             <div>
-              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+              <p className="text-xs font-medium tracking-wide text-gray-400 uppercase dark:text-gray-500">
                 Menu item
               </p>
 
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-950">
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-gray-100">
                 {name}
               </h1>
             </div>
@@ -258,10 +258,10 @@ function MenuItemDetails() {
         </div>
 
         {/* MAIN CONTENT */}
-        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-[#1F2937]">
           <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             {/* IMAGE */}
-            <div className="min-h-[320px] bg-gray-100 lg:min-h-[520px]">
+            <div className="min-h-[320px] bg-gray-100 lg:min-h-[520px] dark:bg-gray-800">
               {image_url ? (
                 <img
                   src={image_url}
@@ -269,7 +269,7 @@ function MenuItemDetails() {
                   className="h-full min-h-[320px] w-full object-cover lg:min-h-[520px]"
                 />
               ) : (
-                <div className="flex h-full min-h-[320px] items-center justify-center bg-gray-950 text-gray-400 lg:min-h-[520px]">
+                <div className="flex h-full min-h-[320px] items-center justify-center bg-gray-950 text-gray-400 lg:min-h-[520px] dark:bg-[#0B1120]">
                   <PlaceholderIcon className="h-16 w-16" />
                 </div>
               )}
@@ -278,31 +278,30 @@ function MenuItemDetails() {
             {/* DETAILS */}
             <div className="flex flex-col p-6 sm:p-8">
               {/* CATEGORY */}
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <HiOutlineTag className="h-4 w-4 text-gray-400" />
-
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <HiOutlineTag className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <span>{categoryName}</span>
               </div>
 
               {/* NAME + PRICE */}
               <div className="mt-6">
-                <h2 className="text-3xl font-semibold tracking-tight text-gray-950">
+                <h2 className="text-3xl font-semibold tracking-tight text-gray-950 dark:text-gray-100">
                   {name}
                 </h2>
 
-                <p className="mt-2 text-2xl font-semibold text-gray-950">
+                <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-gray-100">
                   €{Number(price).toFixed(2)}
                 </p>
               </div>
 
               {/* DESCRIPTION */}
               {description && (
-                <div className="mt-6 border-t border-gray-100 pt-6">
-                  <h3 className="text-sm font-semibold text-gray-950">
+                <div className="mt-6 border-t border-gray-100 pt-6 dark:border-gray-700">
+                  <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-100">
                     Description
                   </h3>
 
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
+                  <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
                     {description}
                   </p>
                 </div>
@@ -310,11 +309,11 @@ function MenuItemDetails() {
 
               {/* DIETARY ATTRIBUTES */}
               {dietaryAttributes.length > 0 && (
-                <div className="mt-6 border-t border-gray-100 pt-6">
+                <div className="mt-6 border-t border-gray-100 pt-6 dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <HiOutlineCheckCircle className="h-4 w-4 text-emerald-500" />
 
-                    <h3 className="text-sm font-semibold text-gray-950">
+                    <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-100">
                       Dietary attributes
                     </h3>
                   </div>
@@ -327,11 +326,11 @@ function MenuItemDetails() {
 
               {/* ALLERGENS */}
               {allergens.length > 0 && (
-                <div className="mt-6 border-t border-gray-100 pt-6">
+                <div className="mt-6 border-t border-gray-100 pt-6 dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <HiOutlineXCircle className="h-4 w-4 text-amber-500" />
 
-                    <h3 className="text-sm font-semibold text-gray-950">
+                    <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-100">
                       Allergens
                     </h3>
                   </div>
@@ -343,38 +342,34 @@ function MenuItemDetails() {
               )}
 
               {/* AVAILABILITY */}
-              <div className="mt-6 border-t border-gray-100 pt-6">
-                <div className="flex items-center justify-between">
+              <div className="mt-6 border-t border-gray-100 pt-6 dark:border-gray-700">
+                <div className="flex items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-950">
+                    <h3 className="text-sm font-semibold text-gray-950 dark:text-gray-100">
                       Availability
                     </h3>
 
-                    <p className="mt-1 text-xs text-gray-400">
-                      Current menu availability
+                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                      {is_active
+                        ? "Current menu availability"
+                        : "This item is inactive and cannot be ordered"}
                     </p>
                   </div>
 
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      is_available
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[status]}`}
                   >
                     <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        is_available ? "bg-emerald-500" : "bg-gray-400"
-                      }`}
+                      className={`h-1.5 w-1.5 rounded-full ${statusDotStyles[status]}`}
                     />
 
-                    {is_available ? "Available" : "Unavailable"}
+                    {status}
                   </span>
                 </div>
               </div>
 
               {/* ACTIONS */}
-              <div className="mt-auto border-t border-gray-100 pt-6">
+              <div className="mt-auto border-t border-gray-100 pt-6 dark:border-gray-700">
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
@@ -404,11 +399,13 @@ function MenuItemDetails() {
       {isEditing && (
         <Modal onClose={handleCloseEdit}>
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
               Edit menu item
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500">Update this menu item.</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Update this menu item.
+            </p>
           </div>
 
           <MenuItemForm
@@ -427,17 +424,17 @@ function MenuItemDetails() {
             }
           }}
         >
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+          <div className="text-gray-900 dark:text-gray-100">
+            <h2 className="text-xl font-semibold">
               {menuItemToToggle.is_active
                 ? "Deactivate menu item"
                 : "Reactivate menu item"}
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-gray-500">
+            <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
               Are you sure you want to{" "}
               {menuItemToToggle.is_active ? "deactivate" : "reactivate"}{" "}
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-gray-900 dark:text-gray-100">
                 {menuItemToToggle.name}
               </span>
               ?

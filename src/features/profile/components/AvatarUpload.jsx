@@ -9,81 +9,57 @@ import toast from "react-hot-toast";
 import ConfirmModal from "../../../ui/ConfirmModal";
 import ProfileAvatar from "./ProfileAvatar";
 import AvatarCropModal from "./AvatarCropModal";
-
 import { useUploadAvatar } from "../hooks/useUploadAvatar";
 import { useRemoveAvatar } from "../hooks/useRemoveAvatar";
 import { createCroppedImage } from "../services/profileService";
 
 function AvatarUpload({ profile, avatarUrl }) {
   const inputRef = useRef(null);
-
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-
   const [cropImageUrl, setCropImageUrl] = useState(null);
-
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
 
   const { uploadAvatar, isPending: isUploading } = useUploadAvatar();
-
   const { removeAvatar, isPending: isRemoving } = useRemoveAvatar();
 
   const isPending = isUploading || isRemoving;
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
 
   useEffect(() => {
     return () => {
-      if (cropImageUrl) {
-        URL.revokeObjectURL(cropImageUrl);
-      }
+      if (cropImageUrl) URL.revokeObjectURL(cropImageUrl);
     };
   }, [cropImageUrl]);
 
   function handleFileChange(event) {
     const file = event.target.files?.[0];
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
       toast.error("Only JPEG, PNG, and WebP images are allowed.");
-
       event.target.value = "";
-
       return;
     }
 
-    if (cropImageUrl) {
-      URL.revokeObjectURL(cropImageUrl);
-    }
-
-    const imageUrl = URL.createObjectURL(file);
-
-    setCropImageUrl(imageUrl);
+    setCropImageUrl(URL.createObjectURL(file));
   }
 
   function handleSelectPhoto() {
-    if (isPending) {
-      return;
-    }
-
+    if (isPending) return;
     inputRef.current?.click();
   }
 
   async function handleCrop(croppedAreaPixels) {
-    if (!cropImageUrl) {
-      return;
-    }
+    if (!cropImageUrl) return;
 
     try {
       const croppedBlob = await createCroppedImage(
@@ -95,30 +71,15 @@ function AvatarUpload({ profile, avatarUrl }) {
         type: "image/webp",
       });
 
-      const newPreviewUrl = URL.createObjectURL(croppedBlob);
-
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-
       setSelectedFile(croppedFile);
-      setPreviewUrl(newPreviewUrl);
-
-      if (cropImageUrl) {
-        URL.revokeObjectURL(cropImageUrl);
-      }
-
+      setPreviewUrl(URL.createObjectURL(croppedBlob));
       setCropImageUrl(null);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Unable to crop this photo.");
     }
   }
 
   function handleCancelCrop() {
-    if (cropImageUrl) {
-      URL.revokeObjectURL(cropImageUrl);
-    }
-
     setCropImageUrl(null);
 
     if (inputRef.current) {
@@ -127,9 +88,7 @@ function AvatarUpload({ profile, avatarUrl }) {
   }
 
   function handleUpload() {
-    if (!selectedFile || isPending) {
-      return;
-    }
+    if (!selectedFile || isPending) return;
 
     uploadAvatar(
       {
@@ -140,11 +99,7 @@ function AvatarUpload({ profile, avatarUrl }) {
       {
         onSuccess: () => {
           setSelectedFile(null);
-
-          if (previewUrl) {
-            URL.revokeObjectURL(previewUrl);
-            setPreviewUrl(null);
-          }
+          setPreviewUrl(null);
 
           if (inputRef.current) {
             inputRef.current.value = "";
@@ -155,31 +110,18 @@ function AvatarUpload({ profile, avatarUrl }) {
   }
 
   function handleRemovePhoto() {
-    if (isPending) {
-      return;
-    }
-
-    if (!profile?.avatar_path) {
-      return;
-    }
-
+    if (isPending || !profile?.avatar_path) return;
     setIsRemoveModalOpen(true);
   }
 
   function handleConfirmRemove() {
-    if (!profile?.avatar_path || isPending) {
-      return;
-    }
+    if (!profile?.avatar_path || isPending) return;
 
     removeAvatar(profile.avatar_path, {
       onSuccess: () => {
         setIsRemoveModalOpen(false);
         setSelectedFile(null);
-
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl(null);
-        }
+        setPreviewUrl(null);
 
         if (inputRef.current) {
           inputRef.current.value = "";
@@ -192,10 +134,9 @@ function AvatarUpload({ profile, avatarUrl }) {
 
   return (
     <>
-      <div className="rounded-xl border bg-white p-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 dark:border-gray-700/80 dark:bg-[#111827]">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-          {/* Avatar */}
-          <div className="relative">
+          <div className="relative w-fit">
             <ProfileAvatar
               name={profile?.full_name}
               avatarUrl={displayedAvatarUrl}
@@ -207,23 +148,24 @@ function AvatarUpload({ profile, avatarUrl }) {
               onClick={handleSelectPhoto}
               disabled={isPending}
               aria-label="Change profile photo"
-              className="absolute right-0 bottom-0 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-gray-900 text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="absolute right-0 bottom-0 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-emerald-600 text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#111827]"
             >
               <HiOutlineCamera className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Content */}
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               Profile photo
             </h3>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-400">
               Upload a photo that will be used across RestaurantOS.
             </p>
 
-            <p className="mt-2 text-xs text-gray-400">JPEG, PNG or WebP</p>
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+              JPEG, PNG or WebP
+            </p>
 
             <input
               ref={inputRef}
@@ -238,10 +180,9 @@ function AvatarUpload({ profile, avatarUrl }) {
                 type="button"
                 onClick={handleSelectPhoto}
                 disabled={isPending}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
               >
                 <HiOutlinePhoto className="h-5 w-5" />
-
                 {selectedFile ? "Choose another" : "Choose photo"}
               </button>
 
@@ -250,7 +191,7 @@ function AvatarUpload({ profile, avatarUrl }) {
                   type="button"
                   onClick={handleUpload}
                   disabled={isPending}
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isUploading ? "Uploading..." : "Save photo"}
                 </button>
@@ -261,25 +202,23 @@ function AvatarUpload({ profile, avatarUrl }) {
                   type="button"
                   onClick={handleRemovePhoto}
                   disabled={isPending}
-                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-500/30 dark:bg-red-500/5 dark:text-red-400 dark:hover:bg-red-500/10"
                 >
                   <HiOutlineTrash className="h-5 w-5" />
-
                   {isRemoving ? "Removing..." : "Remove photo"}
                 </button>
               )}
             </div>
 
             {selectedFile && (
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-emerald-700 dark:text-emerald-400">
                 Photo adjusted and ready to upload.
               </p>
             )}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Crop modal */}
       {cropImageUrl && (
         <AvatarCropModal
           image={cropImageUrl}
@@ -288,7 +227,6 @@ function AvatarUpload({ profile, avatarUrl }) {
         />
       )}
 
-      {/* Remove confirmation */}
       <ConfirmModal
         open={isRemoveModalOpen}
         onClose={() => setIsRemoveModalOpen(false)}

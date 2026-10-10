@@ -14,10 +14,7 @@ function AvatarCropModal({ image, onClose, onCrop }) {
   }, []);
 
   function handleSave() {
-    if (!croppedAreaPixels) {
-      return;
-    }
-
+    if (!croppedAreaPixels) return;
     onCrop(croppedAreaPixels);
   }
 
@@ -28,18 +25,17 @@ function AvatarCropModal({ image, onClose, onCrop }) {
       closeOnOverlayClick={false}
       closeOnEscape={false}
     >
-      <div className="space-y-5">
+      <div className="space-y-5 text-gray-900 dark:text-gray-100">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-gray-950">
+          <h2 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-gray-100">
             Adjust profile photo
           </h2>
-
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Drag the photo and zoom to choose exactly what you want to show.
           </p>
         </div>
 
-        <div className="relative h-[320px] overflow-hidden rounded-xl bg-gray-950">
+        <div className="relative h-[320px] overflow-hidden rounded-xl border border-gray-200 bg-gray-950 dark:border-gray-700">
           <Cropper
             image={image}
             crop={crop}
@@ -56,8 +52,7 @@ function AvatarCropModal({ image, onClose, onCrop }) {
         </div>
 
         <div className="flex items-center gap-3">
-          <HiOutlineMinus className="h-4 w-4 shrink-0 text-gray-500" />
-
+          <HiOutlineMinus className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" />
           <input
             type="range"
             min={1}
@@ -65,18 +60,17 @@ function AvatarCropModal({ image, onClose, onCrop }) {
             step={0.01}
             value={zoom}
             onChange={(event) => setZoom(Number(event.target.value))}
-            className="w-full accent-gray-900"
+            className="w-full cursor-pointer accent-emerald-600 dark:accent-emerald-500"
             aria-label="Zoom"
           />
-
-          <HiOutlinePlus className="h-4 w-4 shrink-0 text-gray-500" />
+          <HiOutlinePlus className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" />
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
@@ -85,7 +79,7 @@ function AvatarCropModal({ image, onClose, onCrop }) {
             type="button"
             onClick={handleSave}
             disabled={!croppedAreaPixels}
-            className="rounded-lg bg-gray-950 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Use photo
           </button>

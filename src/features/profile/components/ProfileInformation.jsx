@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import {
   HiOutlineBuildingStorefront,
   HiOutlineEnvelope,
@@ -9,16 +8,12 @@ import {
 } from "react-icons/hi2";
 
 import Modal from "../../../ui/Modal";
-
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
-
 import ProfilePhoneInput from "./PhoneInput";
 
 function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [fullName, setFullName] = useState(profile?.full_name || "");
-
   const [phone, setPhone] = useState(profile?.phone || "");
 
   const { updateProfile, isPending } = useUpdateProfile();
@@ -31,7 +26,6 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
 
   function handleCloseModal() {
     if (isPending) return;
-
     setIsModalOpen(false);
   }
 
@@ -40,9 +34,7 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
 
     const trimmedName = fullName.trim();
 
-    if (!trimmedName) {
-      return;
-    }
+    if (!trimmedName) return;
 
     updateProfile(
       {
@@ -60,14 +52,14 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
 
   return (
     <>
-      <section className="rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm md:p-8">
-        <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-5">
+      <section className="rounded-2xl border border-gray-200/70 bg-white p-6 shadow-sm md:p-8 dark:border-gray-700/80 dark:bg-[#111827]">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-5 dark:border-gray-700">
           <div>
-            <h3 className="text-lg font-semibold tracking-tight text-gray-950">
+            <h3 className="text-lg font-semibold tracking-tight text-gray-950 dark:text-gray-100">
               Personal information
             </h3>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Your personal information associated with RestaurantOS.
             </p>
           </div>
@@ -75,7 +67,7 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
           <button
             type="button"
             onClick={handleOpenModal}
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950"
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
           >
             <HiOutlinePencilSquare className="h-4 w-4" />
             Edit
@@ -118,14 +110,14 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
           closeOnOverlayClick={!isPending}
           closeOnEscape={!isPending}
         >
-          <div>
-            <div className="flex items-start justify-between border-b border-gray-100 pb-5">
+          <div className="text-gray-900 dark:text-gray-100">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-5 dark:border-gray-700">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight text-gray-950">
+                <h2 className="text-lg font-semibold tracking-tight text-gray-950 dark:text-gray-100">
                   Edit personal information
                 </h2>
 
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Update your name and phone number.
                 </p>
               </div>
@@ -135,7 +127,7 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
                 onClick={handleCloseModal}
                 disabled={isPending}
                 aria-label="Close modal"
-                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50"
+                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
               >
                 <span className="text-xl leading-none">×</span>
               </button>
@@ -143,17 +135,16 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
 
             <form onSubmit={handleSubmit}>
               <div className="space-y-5 py-6">
-                {/* Full name */}
                 <div>
                   <label
                     htmlFor="edit-full-name"
-                    className="mb-2 block text-sm font-medium text-gray-700"
+                    className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Full name
                   </label>
 
                   <div className="relative">
-                    <HiOutlineUser className="pointer-events-none absolute top-1/2 left-3 z-10 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <HiOutlineUser className="pointer-events-none absolute top-1/2 left-3 z-10 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
 
                     <input
                       id="edit-full-name"
@@ -163,17 +154,17 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
                       disabled={isPending}
                       required
                       autoFocus
-                      className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-4 pl-10 text-sm text-gray-900 transition outline-none focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 disabled:bg-gray-50"
+                      autoComplete="name"
+                      className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-4 pl-10 text-sm text-gray-900 transition outline-none placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 disabled:bg-gray-50 dark:border-gray-700 dark:bg-[#0B1120] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-500/10 dark:disabled:bg-gray-800"
                       placeholder="Your full name"
                     />
                   </div>
                 </div>
 
-                {/* Phone */}
                 <div>
                   <label
                     htmlFor="edit-phone"
-                    className="mb-2 block text-sm font-medium text-gray-700"
+                    className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Phone
                   </label>
@@ -185,39 +176,38 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label
                     htmlFor="edit-email"
-                    className="mb-2 block text-sm font-medium text-gray-700"
+                    className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Email
                   </label>
 
                   <div className="relative">
-                    <HiOutlineEnvelope className="pointer-events-none absolute top-1/2 left-3 z-10 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <HiOutlineEnvelope className="pointer-events-none absolute top-1/2 left-3 z-10 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
 
                     <input
                       id="edit-email"
                       type="email"
                       value={profile?.email || ""}
                       disabled
-                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pr-4 pl-10 text-sm text-gray-500"
+                      className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pr-4 pl-10 text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                     />
                   </div>
 
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
                     Email cannot be changed from this page.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 pt-4">
+              <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/50 pt-4 dark:border-gray-700 dark:bg-transparent">
                 <button
                   type="button"
                   onClick={handleCloseModal}
                   disabled={isPending}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
@@ -225,7 +215,7 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
                 <button
                   type="submit"
                   disabled={isPending || !fullName.trim()}
-                  className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                 >
                   {isPending ? "Saving..." : "Save changes"}
                 </button>
@@ -240,15 +230,17 @@ function ProfileInformation({ profile, roleLabel, restaurantLabel }) {
 
 function InfoItem({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500">
+    <div className="flex min-w-0 items-start gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-300">
         <Icon className="h-5 w-5" />
       </div>
 
-      <div className="min-w-0">
-        <p className="text-xs font-medium text-gray-400">{label}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          {label}
+        </p>
 
-        <p className="mt-1 truncate text-sm font-medium text-gray-900">
+        <p className="mt-1 text-sm font-medium break-words text-gray-900 dark:text-gray-100">
           {value || "Not provided"}
         </p>
       </div>

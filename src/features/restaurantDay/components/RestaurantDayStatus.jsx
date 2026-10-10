@@ -1,5 +1,4 @@
 import Button from "../../../ui/Button";
-
 import { useRestaurantDayPermissions } from "../hooks/useRestaurantDayPermissions";
 
 function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
@@ -9,20 +8,27 @@ function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
     isLoading: isPermissionLoading,
   } = useRestaurantDayPermissions();
 
+  const cardStyles =
+    "rounded-2xl border bg-white p-5 shadow-sm dark:bg-[#111827] sm:p-6";
+
+  const headingStyles =
+    "text-lg font-semibold text-gray-950 dark:text-gray-100";
+
+  const mutedStyles = "text-sm text-gray-500 dark:text-gray-400";
+
+  const valueStyles = "mt-1 font-medium text-gray-900 dark:text-gray-100";
+
   if (!restaurantDay) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className={`${cardStyles} border-gray-200 dark:border-gray-800`}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
               <span className="h-3 w-3 rounded-full bg-gray-400" />
-
-              <h2 className="text-lg font-semibold text-gray-900">
-                Restaurant Closed
-              </h2>
+              <h2 className={headingStyles}>Restaurant Closed</h2>
             </div>
 
-            <p className="mt-2 text-sm text-gray-500">
+            <p className={`mt-2 ${mutedStyles}`}>
               No Restaurant Day is currently open.
             </p>
           </div>
@@ -39,8 +45,10 @@ function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
 
   return (
     <div
-      className={`rounded-lg border bg-white p-6 ${
-        isClosing ? "border-yellow-200" : "border-green-200"
+      className={`${cardStyles} ${
+        isClosing
+          ? "border-amber-200 dark:border-amber-900/60"
+          : "border-emerald-200 dark:border-emerald-900/60"
       }`}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -48,16 +56,16 @@ function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
           <div className="flex items-center gap-3">
             <span
               className={`h-3 w-3 rounded-full ${
-                isClosing ? "bg-yellow-500" : "bg-green-500"
+                isClosing ? "bg-amber-500" : "bg-emerald-500"
               }`}
             />
 
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className={headingStyles}>
               {isClosing ? "Restaurant Closing" : "Restaurant Open"}
             </h2>
           </div>
 
-          <p className="mt-2 text-sm text-gray-500">
+          <p className={`mt-2 ${mutedStyles}`}>
             {isClosing
               ? "The restaurant day is currently being closed."
               : "The restaurant is currently operating."}
@@ -71,37 +79,33 @@ function RestaurantDayStatus({ restaurantDay, onOpen, onClose }) {
         )}
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-5 border-t border-gray-100 pt-5 sm:grid-cols-2 dark:border-gray-800">
         <div>
-          <p className="text-sm text-gray-500">Business date</p>
-
-          <p className="mt-1 font-medium text-gray-900">
-            {restaurantDay.business_date}
-          </p>
+          <p className={mutedStyles}>Business date</p>
+          <p className={valueStyles}>{restaurantDay.business_date}</p>
         </div>
 
         <div>
-          <p className="text-sm text-gray-500">Opened by</p>
-
-          <p className="mt-1 font-medium text-gray-900">
+          <p className={mutedStyles}>Opened by</p>
+          <p className={valueStyles}>
             {restaurantDay.opened_employee?.full_name || "Unknown"}
           </p>
         </div>
 
         <div>
-          <p className="text-sm text-gray-500">Opening cash</p>
-
-          <p className="mt-1 font-medium text-gray-900">
+          <p className={mutedStyles}>Opening cash</p>
+          <p className={valueStyles}>
             €{Number(restaurantDay.opening_cash).toFixed(2)}
           </p>
         </div>
 
         <div>
-          <p className="text-sm text-gray-500">Status</p>
-
+          <p className={mutedStyles}>Status</p>
           <p
-            className={`mt-1 font-medium capitalize ${
-              isClosing ? "text-yellow-600" : "text-green-600"
+            className={`mt-1 font-semibold capitalize ${
+              isClosing
+                ? "text-amber-600 dark:text-amber-400"
+                : "text-emerald-600 dark:text-emerald-400"
             }`}
           >
             {restaurantDay.status}

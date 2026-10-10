@@ -16,94 +16,39 @@ function MenuCategorySection({
     return null;
   }
 
-  // -------------------------------------------------
-  // LIST VIEW
-  // -------------------------------------------------
+  const isListView = view === "list";
+  const isCompactView = view === "compact";
 
-  if (view === "list") {
-    return (
-      <section>
-        <div className="mb-3">
-          <h3 className="text-base font-semibold text-gray-900">
-            {category.name}
-          </h3>
-
-          {category.description && (
-            <p className="mt-1 text-sm text-gray-500">{category.description}</p>
-          )}
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          {categoryItems.map((menuItem) => (
-            <MenuCard
-              key={menuItem.id}
-              menuItem={menuItem}
-              view="list"
-              onEdit={onEdit}
-              onToggleActive={onToggleActive}
-              canManage={canManage}
-            />
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  // -------------------------------------------------
-  // COMPACT VIEW
-  // -------------------------------------------------
-
-  if (view === "compact") {
-    return (
-      <section>
-        <div className="mb-3">
-          <h3 className="text-base font-semibold text-gray-900">
-            {category.name}
-          </h3>
-
-          {category.description && (
-            <p className="mt-1 text-sm text-gray-500">{category.description}</p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {categoryItems.map((menuItem) => (
-            <MenuCard
-              key={menuItem.id}
-              menuItem={menuItem}
-              view="compact"
-              onEdit={onEdit}
-              onToggleActive={onToggleActive}
-              canManage={canManage}
-            />
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  // -------------------------------------------------
-  // LARGE VIEW
-  // -------------------------------------------------
+  const gridClasses = isCompactView
+    ? "grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3"
+    : "grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3";
 
   return (
     <section>
       <div className="mb-3">
-        <h3 className="text-base font-semibold text-gray-900">
+        <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
           {category.name}
         </h3>
 
         {category.description && (
-          <p className="mt-1 text-sm text-gray-500">{category.description}</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {category.description}
+          </p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div
+        className={
+          isListView
+            ? "overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-[#1F2937]"
+            : gridClasses
+        }
+      >
         {categoryItems.map((menuItem) => (
           <MenuCard
             key={menuItem.id}
             menuItem={menuItem}
-            view="large"
+            view={view}
             onEdit={onEdit}
             onToggleActive={onToggleActive}
             canManage={canManage}
